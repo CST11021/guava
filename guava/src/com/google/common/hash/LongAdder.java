@@ -12,6 +12,7 @@
 package com.google.common.hash;
 
 import com.google.common.annotations.GwtCompatible;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -42,8 +43,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p><em>jsr166e note: This class is targeted to be placed in
  * java.util.concurrent.atomic.</em>
  *
- * @since 1.8
  * @author Doug Lea
+ * @since 1.8
  */
 @GwtCompatible(emulated = true)
 final class LongAdder extends Striped64 implements Serializable, LongAddable {
@@ -52,7 +53,9 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
     /**
      * Version of plus for use in retryUpdate
      */
-    final long fn(long v, long x) { return v + x; }
+    final long fn(long v, long x) {
+        return v + x;
+    }
 
     /**
      * Creates a new adder with initial sum of zero.
@@ -66,13 +69,17 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
      * @param x the value to add
      */
     public void add(long x) {
-        Cell[] as; long b, v; int[] hc; Cell a; int n;
+        Cell[] as;
+        long b, v;
+        int[] hc;
+        Cell a;
+        int n;
         if ((as = cells) != null || !casBase(b = base, b + x)) {
             boolean uncontended = true;
             if ((hc = threadHashCode.get()) == null ||
-                as == null || (n = as.length) < 1 ||
-                (a = as[(n - 1) & hc[0]]) == null ||
-                !(uncontended = a.cas(v = a.value, v + x)))
+                    as == null || (n = as.length) < 1 ||
+                    (a = as[(n - 1) & hc[0]]) == null ||
+                    !(uncontended = a.cas(v = a.value, v + x)))
                 retryUpdate(x, hc, uncontended);
         }
     }
@@ -154,6 +161,7 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
 
     /**
      * Returns the String representation of the {@link #sum}.
+     *
      * @return the String representation of the {@link #sum}
      */
     public String toString() {
@@ -174,7 +182,7 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
      * primitive conversion.
      */
     public int intValue() {
-        return (int)sum();
+        return (int) sum();
     }
 
     /**
@@ -182,7 +190,7 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
      * after a widening primitive conversion.
      */
     public float floatValue() {
-        return (float)sum();
+        return (float) sum();
     }
 
     /**
@@ -190,7 +198,7 @@ final class LongAdder extends Striped64 implements Serializable, LongAddable {
      * primitive conversion.
      */
     public double doubleValue() {
-        return (double)sum();
+        return (double) sum();
     }
 
     private void writeObject(ObjectOutputStream s) throws IOException {

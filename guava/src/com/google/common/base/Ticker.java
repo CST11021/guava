@@ -27,36 +27,37 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
  *
  * @author Kevin Bourrillion
  * @since 10.0 (<a href="https://github.com/google/guava/wiki/Compatibility">mostly
- *     source-compatible</a> since 9.0)
+ * source-compatible</a> since 9.0)
  */
 @Beta
 @GwtCompatible
 public abstract class Ticker {
-  /**
-   * Constructor for use by subclasses.
-   */
-  protected Ticker() {}
+    /**
+     * Constructor for use by subclasses.
+     */
+    protected Ticker() {
+    }
 
-  /**
-   * Returns the number of nanoseconds elapsed since this ticker's fixed point of reference.
-   */
-  @CanIgnoreReturnValue // TODO(kak): Consider removing this
-  public abstract long read();
+    /**
+     * Returns the number of nanoseconds elapsed since this ticker's fixed point of reference.
+     */
+    @CanIgnoreReturnValue // TODO(kak): Consider removing this
+    public abstract long read();
 
-  /**
-   * A ticker that reads the current time using {@link System#nanoTime}.
-   *
-   * @since 10.0
-   */
-  public static Ticker systemTicker() {
-    return SYSTEM_TICKER;
-  }
+    /**
+     * A ticker that reads the current time using {@link System#nanoTime}.
+     *
+     * @since 10.0
+     */
+    public static Ticker systemTicker() {
+        return SYSTEM_TICKER;
+    }
 
-  private static final Ticker SYSTEM_TICKER =
-      new Ticker() {
-        @Override
-        public long read() {
-          return Platform.systemNanoTime();
-        }
-      };
+    private static final Ticker SYSTEM_TICKER =
+            new Ticker() {
+                @Override
+                public long read() {
+                    return Platform.systemNanoTime();
+                }
+            };
 }

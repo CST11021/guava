@@ -12,6 +12,7 @@
 package com.google.common.hash;
 
 import com.google.common.annotations.GwtIncompatible;
+
 import java.util.Random;
 import javax.annotation.Nullable;
 
@@ -89,7 +90,7 @@ abstract class Striped64 extends Number {
      * Padded variant of AtomicLong supporting only raw accesses plus CAS.
      * The value field is placed between pads, hoping that the JVM doesn't
      * reorder them.
-     *
+     * <p>
      * JVM intrinsics note: It would be possible to use a release-only
      * form of CAS here, if it were provided.
      */
@@ -97,7 +98,10 @@ abstract class Striped64 extends Number {
         volatile long p0, p1, p2, p3, p4, p5, p6;
         volatile long value;
         volatile long q0, q1, q2, q3, q4, q5, q6;
-        Cell(long x) { value = x; }
+
+        Cell(long x) {
+            value = x;
+        }
 
         final boolean cas(long cmp, long val) {
             return UNSAFE.compareAndSwapLong(this, valueOffset, cmp, val);
@@ -106,12 +110,13 @@ abstract class Striped64 extends Number {
         // Unsafe mechanics
         private static final sun.misc.Unsafe UNSAFE;
         private static final long valueOffset;
+
         static {
             try {
                 UNSAFE = getUnsafe();
                 Class<?> ak = Cell.class;
                 valueOffset = UNSAFE.objectFieldOffset
-                    (ak.getDeclaredField("value"));
+                        (ak.getDeclaredField("value"));
             } catch (Exception e) {
                 throw new Error(e);
             }
@@ -132,7 +137,9 @@ abstract class Striped64 extends Number {
      */
     static final Random rng = new Random();
 
-    /** Number of CPUS, to place bound on table size */
+    /**
+     * Number of CPUS, to place bound on table size
+     */
     static final int NCPU = Runtime.getRuntime().availableProcessors();
 
     /**
@@ -177,7 +184,7 @@ abstract class Striped64 extends Number {
      * virtualized form is needed within retryUpdate.
      *
      * @param currentValue the current value (of either base or a cell)
-     * @param newValue the argument from a user update call
+     * @param newValue     the argument from a user update call
      * @return result of the update function
      */
     abstract long fn(long currentValue, long newValue);
@@ -189,8 +196,8 @@ abstract class Striped64 extends Number {
      * problems of optimistic retry code, relying on rechecked sets of
      * reads.
      *
-     * @param x the value
-     * @param hc the hash code holder
+     * @param x              the value
+     * @param hc             the hash code holder
      * @param wasUncontended false if CAS failed before call
      */
     final void retryUpdate(long x, @Nullable int[] hc, boolean wasUncontended) {
@@ -199,12 +206,14 @@ abstract class Striped64 extends Number {
             threadHashCode.set(hc = new int[1]); // Initialize randomly
             int r = rng.nextInt(); // Avoid zero to allow xorShift rehash
             h = hc[0] = (r == 0) ? 1 : r;
-        }
-        else
+        } else
             h = hc[0];
         boolean collide = false;                // True if last slot nonempty
-        for (;;) {
-            Cell[] as; Cell a; int n; long v;
+        for (; ; ) {
+            Cell[] as;
+            Cell a;
+            int n;
+            long v;
             if ((as = cells) != null && (n = as.length) > 0) {
                 if ((a = as[(n - 1) & h]) == null) {
                     if (busy == 0) {            // Try to attach new Cell
@@ -212,10 +221,11 @@ abstract class Striped64 extends Number {
                         if (busy == 0 && casBusy()) {
                             boolean created = false;
                             try {               // Recheck under lock
-                                Cell[] rs; int m, j;
+                                Cell[] rs;
+                                int m, j;
                                 if ((rs = cells) != null &&
-                                    (m = rs.length) > 0 &&
-                                    rs[j = (m - 1) & h] == null) {
+                                        (m = rs.length) > 0 &&
+                                        rs[j = (m - 1) & h] == null) {
                                     rs[j] = r;
                                     created = true;
                                 }
@@ -228,8 +238,7 @@ abstract class Striped64 extends Number {
                         }
                     }
                     collide = false;
-                }
-                else if (!wasUncontended)       // CAS already known to fail
+                } else if (!wasUncontended)       // CAS already known to fail
                     wasUncontended = true;      // Continue after rehash
                 else if (a.cas(v = a.value, fn(v, x)))
                     break;
@@ -255,8 +264,7 @@ abstract class Striped64 extends Number {
                 h ^= h >>> 17;
                 h ^= h << 5;
                 hc[0] = h;                      // Record index for next time
-            }
-            else if (busy == 0 && cells == as && casBusy()) {
+            } else if (busy == 0 && cells == as && casBusy()) {
                 boolean init = false;
                 try {                           // Initialize table
                     if (cells == as) {
@@ -270,8 +278,7 @@ abstract class Striped64 extends Number {
                 }
                 if (init)
                     break;
-            }
-            else if (casBase(v = base, fn(v, x)))
+            } else if (casBase(v = base, fn(v, x)))
                 break;                          // Fall back on using base
         }
     }
@@ -296,14 +303,15 @@ abstract class Striped64 extends Number {
     private static final sun.misc.Unsafe UNSAFE;
     private static final long baseOffset;
     private static final long busyOffset;
+
     static {
         try {
             UNSAFE = getUnsafe();
             Class<?> sk = Striped64.class;
             baseOffset = UNSAFE.objectFieldOffset
-                (sk.getDeclaredField("base"));
+                    (sk.getDeclaredField("base"));
             busyOffset = UNSAFE.objectFieldOffset
-                (sk.getDeclaredField("busy"));
+                    (sk.getDeclaredField("busy"));
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -319,23 +327,25 @@ abstract class Striped64 extends Number {
     private static sun.misc.Unsafe getUnsafe() {
         try {
             return sun.misc.Unsafe.getUnsafe();
-        } catch (SecurityException tryReflectionInstead) {}
+        } catch (SecurityException tryReflectionInstead) {
+        }
         try {
             return java.security.AccessController.doPrivileged
-            (new java.security.PrivilegedExceptionAction<sun.misc.Unsafe>() {
-                public sun.misc.Unsafe run() throws Exception {
-                    Class<sun.misc.Unsafe> k = sun.misc.Unsafe.class;
-                    for (java.lang.reflect.Field f : k.getDeclaredFields()) {
-                        f.setAccessible(true);
-                        Object x = f.get(null);
-                        if (k.isInstance(x))
-                            return k.cast(x);
-                    }
-                    throw new NoSuchFieldError("the Unsafe");
-                }});
+                    (new java.security.PrivilegedExceptionAction<sun.misc.Unsafe>() {
+                        public sun.misc.Unsafe run() throws Exception {
+                            Class<sun.misc.Unsafe> k = sun.misc.Unsafe.class;
+                            for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                                f.setAccessible(true);
+                                Object x = f.get(null);
+                                if (k.isInstance(x))
+                                    return k.cast(x);
+                            }
+                            throw new NoSuchFieldError("the Unsafe");
+                        }
+                    });
         } catch (java.security.PrivilegedActionException e) {
             throw new RuntimeException("Could not initialize intrinsics",
-                                       e.getCause());
+                    e.getCause());
         }
     }
 }

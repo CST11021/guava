@@ -17,6 +17,7 @@
 package com.google.common.collect;
 
 import com.google.common.annotations.GwtCompatible;
+
 import java.lang.reflect.Array;
 
 /**
@@ -26,32 +27,33 @@ import java.lang.reflect.Array;
  */
 @GwtCompatible(emulated = true)
 final class Platform {
-  /**
-   * Returns a new array of the given length with the same type as a reference
-   * array.
-   *
-   * @param reference any array of the desired type
-   * @param length the length of the new array
-   */
-  static <T> T[] newArray(T[] reference, int length) {
-    Class<?> type = reference.getClass().getComponentType();
+    /**
+     * Returns a new array of the given length with the same type as a reference
+     * array.
+     *
+     * @param reference any array of the desired type
+     * @param length    the length of the new array
+     */
+    static <T> T[] newArray(T[] reference, int length) {
+        Class<?> type = reference.getClass().getComponentType();
 
-    // the cast is safe because
-    // result.getClass() == reference.getClass().getComponentType()
-    @SuppressWarnings("unchecked")
-    T[] result = (T[]) Array.newInstance(type, length);
-    return result;
-  }
+        // the cast is safe because
+        // result.getClass() == reference.getClass().getComponentType()
+        @SuppressWarnings("unchecked")
+        T[] result = (T[]) Array.newInstance(type, length);
+        return result;
+    }
 
-  /**
-   * Configures the given map maker to use weak keys, if possible; does nothing
-   * otherwise (i.e., in GWT). This is sometimes acceptable, when only
-   * server-side code could generate enough volume that reclamation becomes
-   * important.
-   */
-  static MapMaker tryWeakKeys(MapMaker mapMaker) {
-    return mapMaker.weakKeys();
-  }
+    /**
+     * Configures the given map maker to use weak keys, if possible; does nothing
+     * otherwise (i.e., in GWT). This is sometimes acceptable, when only
+     * server-side code could generate enough volume that reclamation becomes
+     * important.
+     */
+    static MapMaker tryWeakKeys(MapMaker mapMaker) {
+        return mapMaker.weakKeys();
+    }
 
-  private Platform() {}
+    private Platform() {
+    }
 }

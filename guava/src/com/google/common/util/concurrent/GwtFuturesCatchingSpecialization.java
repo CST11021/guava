@@ -24,9 +24,9 @@ import com.google.common.annotations.GwtCompatible;
  */
 @GwtCompatible(emulated = true)
 abstract class GwtFuturesCatchingSpecialization {
-  /*
-   * This server copy of the class is empty. The corresponding GWT copy contains alternative
-   * versions of catching() and catchingAsync() with slightly different signatures from the ones
-   * found in Futures.java.
-   */
+    /*
+     * This server copy of the class is empty. The corresponding GWT copy contains alternative
+     * versions of catching() and catchingAsync() with slightly different signatures from the ones
+     * found in Futures.java.
+     */
 }

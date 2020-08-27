@@ -17,6 +17,7 @@
 package com.google.common.graph;
 
 import com.google.common.annotations.Beta;
+
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -41,11 +42,11 @@ import javax.annotation.Nullable;
  * terms</a>):
  *
  * <ul>
- *   <li>directed graphs
- *   <li>undirected graphs
- *   <li>graphs that do/don't allow self-loops
- *   <li>graphs whose nodes/edges are insertion-ordered, sorted, or unordered
- *   <li>graphs whose edges have associated values
+ * <li>directed graphs
+ * <li>undirected graphs
+ * <li>graphs that do/don't allow self-loops
+ * <li>graphs whose nodes/edges are insertion-ordered, sorted, or unordered
+ * <li>graphs whose edges have associated values
  * </ul>
  *
  * <p>{@code ValueGraph}, as a subtype of {@code Graph}, explicitly does not support parallel edges,
@@ -91,149 +92,173 @@ import javax.annotation.Nullable;
  * additional documentation, including:
  *
  * <ul>
- *   <li><a
- *       href="https://github.com/google/guava/wiki/GraphsExplained#equals-hashcode-and-graph-equivalence">
- *       {@code equals()}, {@code hashCode()}, and graph equivalence</a>
- *   <li><a href="https://github.com/google/guava/wiki/GraphsExplained#synchronization">
- *       Synchronization policy</a>
- *   <li><a href="https://github.com/google/guava/wiki/GraphsExplained#notes-for-implementors">Notes
- *       for implementors</a>
+ * <li><a
+ * href="https://github.com/google/guava/wiki/GraphsExplained#equals-hashcode-and-graph-equivalence">
+ * {@code equals()}, {@code hashCode()}, and graph equivalence</a>
+ * <li><a href="https://github.com/google/guava/wiki/GraphsExplained#synchronization">
+ * Synchronization policy</a>
+ * <li><a href="https://github.com/google/guava/wiki/GraphsExplained#notes-for-implementors">Notes
+ * for implementors</a>
  * </ul>
  *
- * @author James Sexton
- * @author Joshua O'Madadhain
  * @param <N> Node parameter type
  * @param <V> Value parameter type
+ * @author James Sexton
+ * @author Joshua O'Madadhain
  * @since 20.0
  */
 // TODO(b/35456940): Update the documentation to reflect the new interfaces
 @Beta
 public interface ValueGraph<N, V> extends BaseGraph<N> {
-  //
-  // ValueGraph-level accessors
-  //
+    //
+    // ValueGraph-level accessors
+    //
 
-  /** {@inheritDoc} */
-  @Override
-  Set<N> nodes();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<N> nodes();
 
-  /** {@inheritDoc} */
-  @Override
-  Set<EndpointPair<N>> edges();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<EndpointPair<N>> edges();
 
-  /**
-   * Returns a live view of this graph as a {@link Graph}. The resulting {@link Graph} will have an
-   * edge connecting node A to node B if this {@link ValueGraph} has an edge connecting A to B.
-   */
-  Graph<N> asGraph();
+    /**
+     * Returns a live view of this graph as a {@link Graph}. The resulting {@link Graph} will have an
+     * edge connecting node A to node B if this {@link ValueGraph} has an edge connecting A to B.
+     */
+    Graph<N> asGraph();
 
-  //
-  // ValueGraph properties
-  //
+    //
+    // ValueGraph properties
+    //
 
-  /** {@inheritDoc} */
-  @Override
-  boolean isDirected();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    boolean isDirected();
 
-  /** {@inheritDoc} */
-  @Override
-  boolean allowsSelfLoops();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    boolean allowsSelfLoops();
 
-  /** {@inheritDoc} */
-  @Override
-  ElementOrder<N> nodeOrder();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    ElementOrder<N> nodeOrder();
 
-  //
-  // Element-level accessors
-  //
+    //
+    // Element-level accessors
+    //
 
-  /** {@inheritDoc} */
-  @Override
-  Set<N> adjacentNodes(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<N> adjacentNodes(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  Set<N> predecessors(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<N> predecessors(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  Set<N> successors(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<N> successors(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  int degree(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    int degree(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  int inDegree(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    int inDegree(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  int outDegree(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    int outDegree(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  boolean hasEdgeConnecting(N nodeU, N nodeV);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    boolean hasEdgeConnecting(N nodeU, N nodeV);
 
-  /**
-   * Returns the value of the edge connecting {@code nodeU} to {@code nodeV}, if one is present;
-   * otherwise, returns {@code Optional.empty()}.
-   *
-   * <p>In an undirected graph, this is equal to {@code edgeValue(nodeV, nodeU)}.
-   *
-   * @throws IllegalArgumentException if {@code nodeU} or {@code nodeV} is not an element of this
-   *     graph
-   * @since 23.0 (since 20.0 with return type {@code V})
-   */
-  Optional<V> edgeValue(N nodeU, N nodeV);
+    /**
+     * Returns the value of the edge connecting {@code nodeU} to {@code nodeV}, if one is present;
+     * otherwise, returns {@code Optional.empty()}.
+     *
+     * <p>In an undirected graph, this is equal to {@code edgeValue(nodeV, nodeU)}.
+     *
+     * @throws IllegalArgumentException if {@code nodeU} or {@code nodeV} is not an element of this
+     *                                  graph
+     * @since 23.0 (since 20.0 with return type {@code V})
+     */
+    Optional<V> edgeValue(N nodeU, N nodeV);
 
-  /**
-   * Returns the value of the edge connecting {@code nodeU} to {@code nodeV}, if one is present;
-   * otherwise, returns {@code defaultValue}.
-   *
-   * <p>In an undirected graph, this is equal to {@code edgeValueOrDefault(nodeV, nodeU,
-   * defaultValue)}.
-   *
-   * @throws IllegalArgumentException if {@code nodeU} or {@code nodeV} is not an element of this
-   *     graph
-   */
-  @Nullable
-  V edgeValueOrDefault(N nodeU, N nodeV, @Nullable V defaultValue);
+    /**
+     * Returns the value of the edge connecting {@code nodeU} to {@code nodeV}, if one is present;
+     * otherwise, returns {@code defaultValue}.
+     *
+     * <p>In an undirected graph, this is equal to {@code edgeValueOrDefault(nodeV, nodeU,
+     * defaultValue)}.
+     *
+     * @throws IllegalArgumentException if {@code nodeU} or {@code nodeV} is not an element of this
+     *                                  graph
+     */
+    @Nullable
+    V edgeValueOrDefault(N nodeU, N nodeV, @Nullable V defaultValue);
 
-  //
-  // ValueGraph identity
-  //
+    //
+    // ValueGraph identity
+    //
 
-  /**
-   * Returns {@code true} iff {@code object} is a {@link ValueGraph} that has the same elements and
-   * the same structural relationships as those in this graph.
-   *
-   * <p>Thus, two value graphs A and B are equal if <b>all</b> of the following are true:
-   *
-   * <ul>
-   * <li>A and B have equal {@link #isDirected() directedness}.
-   * <li>A and B have equal {@link #nodes() node sets}.
-   * <li>A and B have equal {@link #edges() edge sets}.
-   * <li>The {@link #edgeValue(Object, Object) value} of a given edge is the same in both A and B.
-   * </ul>
-   *
-   * <p>Graph properties besides {@link #isDirected() directedness} do <b>not</b> affect equality.
-   * For example, two graphs may be considered equal even if one allows self-loops and the other
-   * doesn't. Additionally, the order in which nodes or edges are added to the graph, and the order
-   * in which they are iterated over, are irrelevant.
-   *
-   * <p>A reference implementation of this is provided by {@link AbstractValueGraph#equals(Object)}.
-   */
-  @Override
-  boolean equals(@Nullable Object object);
+    /**
+     * Returns {@code true} iff {@code object} is a {@link ValueGraph} that has the same elements and
+     * the same structural relationships as those in this graph.
+     *
+     * <p>Thus, two value graphs A and B are equal if <b>all</b> of the following are true:
+     *
+     * <ul>
+     * <li>A and B have equal {@link #isDirected() directedness}.
+     * <li>A and B have equal {@link #nodes() node sets}.
+     * <li>A and B have equal {@link #edges() edge sets}.
+     * <li>The {@link #edgeValue(Object, Object) value} of a given edge is the same in both A and B.
+     * </ul>
+     *
+     * <p>Graph properties besides {@link #isDirected() directedness} do <b>not</b> affect equality.
+     * For example, two graphs may be considered equal even if one allows self-loops and the other
+     * doesn't. Additionally, the order in which nodes or edges are added to the graph, and the order
+     * in which they are iterated over, are irrelevant.
+     *
+     * <p>A reference implementation of this is provided by {@link AbstractValueGraph#equals(Object)}.
+     */
+    @Override
+    boolean equals(@Nullable Object object);
 
-  /**
-   * Returns the hash code for this graph. The hash code of a graph is defined as the hash code of a
-   * map from each of its {@link #edges() edges} to the associated {@link #edgeValue(Object, Object)
-   * edge value}.
-   *
-   * <p>A reference implementation of this is provided by {@link AbstractValueGraph#hashCode()}.
-   */
-  @Override
-  int hashCode();
+    /**
+     * Returns the hash code for this graph. The hash code of a graph is defined as the hash code of a
+     * map from each of its {@link #edges() edges} to the associated {@link #edgeValue(Object, Object)
+     * edge value}.
+     *
+     * <p>A reference implementation of this is provided by {@link AbstractValueGraph#hashCode()}.
+     */
+    @Override
+    int hashCode();
 }

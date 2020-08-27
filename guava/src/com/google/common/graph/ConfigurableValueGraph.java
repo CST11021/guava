@@ -36,118 +36,120 @@ import javax.annotation.Nullable;
  *
  * <p>The time complexity of all collection-returning accessors is O(1), since views are returned.
  *
+ * @param <N> Node parameter type
+ * @param <V> Value parameter type
  * @author James Sexton
  * @author Joshua O'Madadhain
  * @author Omar Darwish
- * @param <N> Node parameter type
- * @param <V> Value parameter type
  */
 class ConfigurableValueGraph<N, V> extends AbstractValueGraph<N, V> {
-  private final boolean isDirected;
-  private final boolean allowsSelfLoops;
-  private final ElementOrder<N> nodeOrder;
+    private final boolean isDirected;
+    private final boolean allowsSelfLoops;
+    private final ElementOrder<N> nodeOrder;
 
-  protected final MapIteratorCache<N, GraphConnections<N, V>> nodeConnections;
+    protected final MapIteratorCache<N, GraphConnections<N, V>> nodeConnections;
 
-  protected long edgeCount; // must be updated when edges are added or removed
+    protected long edgeCount; // must be updated when edges are added or removed
 
-  /** Constructs a graph with the properties specified in {@code builder}. */
-  ConfigurableValueGraph(AbstractGraphBuilder<? super N> builder) {
-    this(
-        builder,
-        builder.nodeOrder.<N, GraphConnections<N, V>>createMap(
-            builder.expectedNodeCount.or(DEFAULT_NODE_COUNT)),
-        0L);
-  }
-
-  /**
-   * Constructs a graph with the properties specified in {@code builder}, initialized with the given
-   * node map.
-   */
-  ConfigurableValueGraph(
-      AbstractGraphBuilder<? super N> builder,
-      Map<N, GraphConnections<N, V>> nodeConnections,
-      long edgeCount) {
-    this.isDirected = builder.directed;
-    this.allowsSelfLoops = builder.allowsSelfLoops;
-    this.nodeOrder = builder.nodeOrder.cast();
-    // Prefer the heavier "MapRetrievalCache" for nodes if lookup is expensive.
-    this.nodeConnections =
-        (nodeConnections instanceof TreeMap)
-            ? new MapRetrievalCache<N, GraphConnections<N, V>>(nodeConnections)
-            : new MapIteratorCache<N, GraphConnections<N, V>>(nodeConnections);
-    this.edgeCount = checkNonNegative(edgeCount);
-  }
-
-  @Override
-  public Set<N> nodes() {
-    return nodeConnections.unmodifiableKeySet();
-  }
-
-  @Override
-  public boolean isDirected() {
-    return isDirected;
-  }
-
-  @Override
-  public boolean allowsSelfLoops() {
-    return allowsSelfLoops;
-  }
-
-  @Override
-  public ElementOrder<N> nodeOrder() {
-    return nodeOrder;
-  }
-
-  @Override
-  public Set<N> adjacentNodes(N node) {
-    return checkedConnections(node).adjacentNodes();
-  }
-
-  @Override
-  public Set<N> predecessors(N node) {
-    return checkedConnections(node).predecessors();
-  }
-
-  @Override
-  public Set<N> successors(N node) {
-    return checkedConnections(node).successors();
-  }
-
-  @Override
-  public boolean hasEdgeConnecting(N nodeU, N nodeV) {
-    checkNotNull(nodeU);
-    checkNotNull(nodeV);
-    GraphConnections<N, V> connectionsU = nodeConnections.get(nodeU);
-    return (connectionsU != null) && connectionsU.successors().contains(nodeV);
-  }
-
-  @Override
-  @Nullable
-  public V edgeValueOrDefault(N nodeU, N nodeV, @Nullable V defaultValue) {
-    checkNotNull(nodeU);
-    checkNotNull(nodeV);
-    GraphConnections<N, V> connectionsU = nodeConnections.get(nodeU);
-    return connectionsU == null
-        ? defaultValue
-        : connectionsU.value(nodeV);
-  }
-
-  @Override
-  protected long edgeCount() {
-    return edgeCount;
-  }
-
-  protected final GraphConnections<N, V> checkedConnections(N node) {
-    GraphConnections<N, V> connections = nodeConnections.get(node);
-    if (connections == null) {
-      checkNotNull(node);
-      throw new IllegalArgumentException("Node " + node + " is not an element of this graph.");
+    /**
+     * Constructs a graph with the properties specified in {@code builder}.
+     */
+    ConfigurableValueGraph(AbstractGraphBuilder<? super N> builder) {
+        this(
+                builder,
+                builder.nodeOrder.<N, GraphConnections<N, V>>createMap(
+                        builder.expectedNodeCount.or(DEFAULT_NODE_COUNT)),
+                0L);
     }
-    return connections;
-  }
 
-  protected final boolean containsNode(@Nullable N node) {
-    return nodeConnections.containsKey(node);
-  }
+    /**
+     * Constructs a graph with the properties specified in {@code builder}, initialized with the given
+     * node map.
+     */
+    ConfigurableValueGraph(
+            AbstractGraphBuilder<? super N> builder,
+            Map<N, GraphConnections<N, V>> nodeConnections,
+            long edgeCount) {
+        this.isDirected = builder.directed;
+        this.allowsSelfLoops = builder.allowsSelfLoops;
+        this.nodeOrder = builder.nodeOrder.cast();
+        // Prefer the heavier "MapRetrievalCache" for nodes if lookup is expensive.
+        this.nodeConnections =
+                (nodeConnections instanceof TreeMap)
+                        ? new MapRetrievalCache<N, GraphConnections<N, V>>(nodeConnections)
+                        : new MapIteratorCache<N, GraphConnections<N, V>>(nodeConnections);
+        this.edgeCount = checkNonNegative(edgeCount);
+    }
+
+    @Override
+    public Set<N> nodes() {
+        return nodeConnections.unmodifiableKeySet();
+    }
+
+    @Override
+    public boolean isDirected() {
+        return isDirected;
+    }
+
+    @Override
+    public boolean allowsSelfLoops() {
+        return allowsSelfLoops;
+    }
+
+    @Override
+    public ElementOrder<N> nodeOrder() {
+        return nodeOrder;
+    }
+
+    @Override
+    public Set<N> adjacentNodes(N node) {
+        return checkedConnections(node).adjacentNodes();
+    }
+
+    @Override
+    public Set<N> predecessors(N node) {
+        return checkedConnections(node).predecessors();
+    }
+
+    @Override
+    public Set<N> successors(N node) {
+        return checkedConnections(node).successors();
+    }
+
+    @Override
+    public boolean hasEdgeConnecting(N nodeU, N nodeV) {
+        checkNotNull(nodeU);
+        checkNotNull(nodeV);
+        GraphConnections<N, V> connectionsU = nodeConnections.get(nodeU);
+        return (connectionsU != null) && connectionsU.successors().contains(nodeV);
+    }
+
+    @Override
+    @Nullable
+    public V edgeValueOrDefault(N nodeU, N nodeV, @Nullable V defaultValue) {
+        checkNotNull(nodeU);
+        checkNotNull(nodeV);
+        GraphConnections<N, V> connectionsU = nodeConnections.get(nodeU);
+        return connectionsU == null
+                ? defaultValue
+                : connectionsU.value(nodeV);
+    }
+
+    @Override
+    protected long edgeCount() {
+        return edgeCount;
+    }
+
+    protected final GraphConnections<N, V> checkedConnections(N node) {
+        GraphConnections<N, V> connections = nodeConnections.get(node);
+        if (connections == null) {
+            checkNotNull(node);
+            throw new IllegalArgumentException("Node " + node + " is not an element of this graph.");
+        }
+        return connections;
+    }
+
+    protected final boolean containsNode(@Nullable N node) {
+        return nodeConnections.containsKey(node);
+    }
 }

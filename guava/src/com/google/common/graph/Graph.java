@@ -17,6 +17,7 @@
 package com.google.common.graph;
 
 import com.google.common.annotations.Beta;
+
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -40,10 +41,10 @@ import javax.annotation.Nullable;
  * terms</a>):
  *
  * <ul>
- *   <li>directed graphs
- *   <li>undirected graphs
- *   <li>graphs that do/don't allow self-loops
- *   <li>graphs whose nodes/edges are insertion-ordered, sorted, or unordered
+ * <li>directed graphs
+ * <li>undirected graphs
+ * <li>graphs that do/don't allow self-loops
+ * <li>graphs whose nodes/edges are insertion-ordered, sorted, or unordered
  * </ul>
  *
  * <p>{@code Graph} explicitly does not support parallel edges, and forbids implementations or
@@ -85,115 +86,139 @@ import javax.annotation.Nullable;
  * additional documentation, including:
  *
  * <ul>
- *   <li><a
- *       href="https://github.com/google/guava/wiki/GraphsExplained#equals-hashcode-and-graph-equivalence">
- *       {@code equals()}, {@code hashCode()}, and graph equivalence</a>
- *   <li><a href="https://github.com/google/guava/wiki/GraphsExplained#synchronization">
- *       Synchronization policy</a>
- *   <li><a href="https://github.com/google/guava/wiki/GraphsExplained#notes-for-implementors">Notes
- *       for implementors</a>
+ * <li><a
+ * href="https://github.com/google/guava/wiki/GraphsExplained#equals-hashcode-and-graph-equivalence">
+ * {@code equals()}, {@code hashCode()}, and graph equivalence</a>
+ * <li><a href="https://github.com/google/guava/wiki/GraphsExplained#synchronization">
+ * Synchronization policy</a>
+ * <li><a href="https://github.com/google/guava/wiki/GraphsExplained#notes-for-implementors">Notes
+ * for implementors</a>
  * </ul>
  *
+ * @param <N> Node parameter type
  * @author James Sexton
  * @author Joshua O'Madadhain
- * @param <N> Node parameter type
  * @since 20.0
  */
 // TODO(b/35456940): Update the documentation to reflect the new interfaces
 @Beta
 public interface Graph<N> extends BaseGraph<N> {
-  //
-  // Graph-level accessors
-  //
+    //
+    // Graph-level accessors
+    //
 
-  /** {@inheritDoc} */
-  @Override
-  Set<N> nodes();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<N> nodes();
 
-  /** {@inheritDoc} */
-  @Override
-  Set<EndpointPair<N>> edges();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<EndpointPair<N>> edges();
 
-  //
-  // Graph properties
-  //
+    //
+    // Graph properties
+    //
 
-  /** {@inheritDoc} */
-  @Override
-  boolean isDirected();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    boolean isDirected();
 
-  /** {@inheritDoc} */
-  @Override
-  boolean allowsSelfLoops();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    boolean allowsSelfLoops();
 
-  /** {@inheritDoc} */
-  @Override
-  ElementOrder<N> nodeOrder();
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    ElementOrder<N> nodeOrder();
 
-  //
-  // Element-level accessors
-  //
+    //
+    // Element-level accessors
+    //
 
-  /** {@inheritDoc} */
-  @Override
-  Set<N> adjacentNodes(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<N> adjacentNodes(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  Set<N> predecessors(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<N> predecessors(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  Set<N> successors(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Set<N> successors(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  int degree(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    int degree(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  int inDegree(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    int inDegree(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  int outDegree(N node);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    int outDegree(N node);
 
-  /** {@inheritDoc} */
-  @Override
-  boolean hasEdgeConnecting(N nodeU, N nodeV);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    boolean hasEdgeConnecting(N nodeU, N nodeV);
 
-  //
-  // Graph identity
-  //
+    //
+    // Graph identity
+    //
 
-  /**
-   * Returns {@code true} iff {@code object} is a {@link Graph} that has the same elements and the
-   * same structural relationships as those in this graph.
-   *
-   * <p>Thus, two graphs A and B are equal if <b>all</b> of the following are true:
-   *
-   * <ul>
-   * <li>A and B have equal {@link #isDirected() directedness}.
-   * <li>A and B have equal {@link #nodes() node sets}.
-   * <li>A and B have equal {@link #edges() edge sets}.
-   * </ul>
-   *
-   * <p>Graph properties besides {@link #isDirected() directedness} do <b>not</b> affect equality.
-   * For example, two graphs may be considered equal even if one allows self-loops and the other
-   * doesn't. Additionally, the order in which nodes or edges are added to the graph, and the order
-   * in which they are iterated over, are irrelevant.
-   *
-   * <p>A reference implementation of this is provided by {@link AbstractGraph#equals(Object)}.
-   */
-  @Override
-  boolean equals(@Nullable Object object);
+    /**
+     * Returns {@code true} iff {@code object} is a {@link Graph} that has the same elements and the
+     * same structural relationships as those in this graph.
+     *
+     * <p>Thus, two graphs A and B are equal if <b>all</b> of the following are true:
+     *
+     * <ul>
+     * <li>A and B have equal {@link #isDirected() directedness}.
+     * <li>A and B have equal {@link #nodes() node sets}.
+     * <li>A and B have equal {@link #edges() edge sets}.
+     * </ul>
+     *
+     * <p>Graph properties besides {@link #isDirected() directedness} do <b>not</b> affect equality.
+     * For example, two graphs may be considered equal even if one allows self-loops and the other
+     * doesn't. Additionally, the order in which nodes or edges are added to the graph, and the order
+     * in which they are iterated over, are irrelevant.
+     *
+     * <p>A reference implementation of this is provided by {@link AbstractGraph#equals(Object)}.
+     */
+    @Override
+    boolean equals(@Nullable Object object);
 
-  /**
-   * Returns the hash code for this graph. The hash code of a graph is defined as the hash code of
-   * the set returned by {@link #edges()}.
-   *
-   * <p>A reference implementation of this is provided by {@link AbstractGraph#hashCode()}.
-   */
-  @Override
-  int hashCode();
+    /**
+     * Returns the hash code for this graph. The hash code of a graph is defined as the hash code of
+     * the set returned by {@link #edges()}.
+     *
+     * <p>A reference implementation of this is provided by {@link AbstractGraph#hashCode()}.
+     */
+    @Override
+    int hashCode();
 }

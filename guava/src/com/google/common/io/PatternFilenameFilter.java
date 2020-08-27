@@ -17,6 +17,7 @@ package com.google.common.io;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.base.Preconditions;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.regex.Pattern;
@@ -34,30 +35,29 @@ import javax.annotation.Nullable;
 @GwtIncompatible
 public final class PatternFilenameFilter implements FilenameFilter {
 
-  private final Pattern pattern;
+    private final Pattern pattern;
 
-  /**
-   * Constructs a pattern file name filter object.
-   *
-   * @param patternStr the pattern string on which to filter file names
-   *
-   * @throws PatternSyntaxException if pattern compilation fails (runtime)
-   */
-  public PatternFilenameFilter(String patternStr) {
-    this(Pattern.compile(patternStr));
-  }
+    /**
+     * Constructs a pattern file name filter object.
+     *
+     * @param patternStr the pattern string on which to filter file names
+     * @throws PatternSyntaxException if pattern compilation fails (runtime)
+     */
+    public PatternFilenameFilter(String patternStr) {
+        this(Pattern.compile(patternStr));
+    }
 
-  /**
-   * Constructs a pattern file name filter object.
-   *
-   * @param pattern the pattern on which to filter file names
-   */
-  public PatternFilenameFilter(Pattern pattern) {
-    this.pattern = Preconditions.checkNotNull(pattern);
-  }
+    /**
+     * Constructs a pattern file name filter object.
+     *
+     * @param pattern the pattern on which to filter file names
+     */
+    public PatternFilenameFilter(Pattern pattern) {
+        this.pattern = Preconditions.checkNotNull(pattern);
+    }
 
-  @Override
-  public boolean accept(@Nullable File dir, String fileName) {
-    return pattern.matcher(fileName).matches();
-  }
+    @Override
+    public boolean accept(@Nullable File dir, String fileName) {
+        return pattern.matcher(fileName).matches();
+    }
 }

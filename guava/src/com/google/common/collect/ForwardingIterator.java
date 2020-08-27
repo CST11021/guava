@@ -18,6 +18,7 @@ package com.google.common.collect;
 
 import com.google.common.annotations.GwtCompatible;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+
 import java.util.Iterator;
 
 /**
@@ -39,25 +40,28 @@ import java.util.Iterator;
 @GwtCompatible
 public abstract class ForwardingIterator<T> extends ForwardingObject implements Iterator<T> {
 
-  /** Constructor for use by subclasses. */
-  protected ForwardingIterator() {}
+    /**
+     * Constructor for use by subclasses.
+     */
+    protected ForwardingIterator() {
+    }
 
-  @Override
-  protected abstract Iterator<T> delegate();
+    @Override
+    protected abstract Iterator<T> delegate();
 
-  @Override
-  public boolean hasNext() {
-    return delegate().hasNext();
-  }
+    @Override
+    public boolean hasNext() {
+        return delegate().hasNext();
+    }
 
-  @CanIgnoreReturnValue
-  @Override
-  public T next() {
-    return delegate().next();
-  }
+    @CanIgnoreReturnValue
+    @Override
+    public T next() {
+        return delegate().next();
+    }
 
-  @Override
-  public void remove() {
-    delegate().remove();
-  }
+    @Override
+    public void remove() {
+        delegate().remove();
+    }
 }

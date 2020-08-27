@@ -15,6 +15,7 @@
 package com.google.common.hash;
 
 import com.google.common.annotations.Beta;
+
 import java.io.Serializable;
 
 /**
@@ -41,11 +42,11 @@ import java.io.Serializable;
 @Beta
 public interface Funnel<T> extends Serializable {
 
-  /**
-   * Sends a stream of data from the {@code from} object into the sink {@code into}. There is no
-   * requirement that this data be complete enough to fully reconstitute the object later.
-   *
-   * @since 12.0 (in Guava 11.0, {@code PrimitiveSink} was named {@code Sink})
-   */
-  void funnel(T from, PrimitiveSink into);
+    /**
+     * Sends a stream of data from the {@code from} object into the sink {@code into}. There is no
+     * requirement that this data be complete enough to fully reconstitute the object later.
+     *
+     * @since 12.0 (in Guava 11.0, {@code PrimitiveSink} was named {@code Sink})
+     */
+    void funnel(T from, PrimitiveSink into);
 }

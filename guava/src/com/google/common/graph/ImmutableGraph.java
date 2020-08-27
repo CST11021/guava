@@ -35,63 +35,65 @@ import com.google.errorprone.annotations.Immutable;
  * of the {@code Immutable*} types</a> for more information on the properties and guarantees
  * provided by this class.
  *
+ * @param <N> Node parameter type
  * @author James Sexton
  * @author Joshua O'Madadhain
  * @author Omar Darwish
- * @param <N> Node parameter type
  * @since 20.0
  */
 @Beta
 @Immutable(containerOf = {"N"})
 public class ImmutableGraph<N> extends ForwardingGraph<N> {
-  @SuppressWarnings("Immutable") // The backing graph must be immutable.
-  private final BaseGraph<N> backingGraph;
+    @SuppressWarnings("Immutable") // The backing graph must be immutable.
+    private final BaseGraph<N> backingGraph;
 
-  ImmutableGraph(BaseGraph<N> backingGraph) {
-    this.backingGraph = backingGraph;
-  }
-
-  /** Returns an immutable copy of {@code graph}. */
-  public static <N> ImmutableGraph<N> copyOf(Graph<N> graph) {
-    return (graph instanceof ImmutableGraph)
-        ? (ImmutableGraph<N>) graph
-        : new ImmutableGraph<N>(new ConfigurableValueGraph<N, Presence>(
-            GraphBuilder.from(graph), getNodeConnections(graph), graph.edges().size()));
-  }
-
-  /**
-   * Simply returns its argument.
-   *
-   * @deprecated no need to use this
-   */
-  @Deprecated
-  public static <N> ImmutableGraph<N> copyOf(ImmutableGraph<N> graph) {
-    return checkNotNull(graph);
-  }
-
-  private static <N> ImmutableMap<N, GraphConnections<N, Presence>> getNodeConnections(
-      Graph<N> graph) {
-    // ImmutableMap.Builder maintains the order of the elements as inserted, so the map will have
-    // whatever ordering the graph's nodes do, so ImmutableSortedMap is unnecessary even if the
-    // input nodes are sorted.
-    ImmutableMap.Builder<N, GraphConnections<N, Presence>> nodeConnections = ImmutableMap.builder();
-    for (N node : graph.nodes()) {
-      nodeConnections.put(node, connectionsOf(graph, node));
+    ImmutableGraph(BaseGraph<N> backingGraph) {
+        this.backingGraph = backingGraph;
     }
-    return nodeConnections.build();
-  }
 
-  private static <N> GraphConnections<N, Presence> connectionsOf(Graph<N> graph, N node) {
-    Function<Object, Presence> edgeValueFn = Functions.constant(Presence.EDGE_EXISTS);
-    return graph.isDirected()
-        ? DirectedGraphConnections.ofImmutable(
-            graph.predecessors(node), Maps.asMap(graph.successors(node), edgeValueFn))
-        : UndirectedGraphConnections.ofImmutable(
-            Maps.asMap(graph.adjacentNodes(node), edgeValueFn));
-  }
+    /**
+     * Returns an immutable copy of {@code graph}.
+     */
+    public static <N> ImmutableGraph<N> copyOf(Graph<N> graph) {
+        return (graph instanceof ImmutableGraph)
+                ? (ImmutableGraph<N>) graph
+                : new ImmutableGraph<N>(new ConfigurableValueGraph<N, Presence>(
+                GraphBuilder.from(graph), getNodeConnections(graph), graph.edges().size()));
+    }
 
-  @Override
-  protected BaseGraph<N> delegate() {
-    return backingGraph;
-  }
+    /**
+     * Simply returns its argument.
+     *
+     * @deprecated no need to use this
+     */
+    @Deprecated
+    public static <N> ImmutableGraph<N> copyOf(ImmutableGraph<N> graph) {
+        return checkNotNull(graph);
+    }
+
+    private static <N> ImmutableMap<N, GraphConnections<N, Presence>> getNodeConnections(
+            Graph<N> graph) {
+        // ImmutableMap.Builder maintains the order of the elements as inserted, so the map will have
+        // whatever ordering the graph's nodes do, so ImmutableSortedMap is unnecessary even if the
+        // input nodes are sorted.
+        ImmutableMap.Builder<N, GraphConnections<N, Presence>> nodeConnections = ImmutableMap.builder();
+        for (N node : graph.nodes()) {
+            nodeConnections.put(node, connectionsOf(graph, node));
+        }
+        return nodeConnections.build();
+    }
+
+    private static <N> GraphConnections<N, Presence> connectionsOf(Graph<N> graph, N node) {
+        Function<Object, Presence> edgeValueFn = Functions.constant(Presence.EDGE_EXISTS);
+        return graph.isDirected()
+                ? DirectedGraphConnections.ofImmutable(
+                graph.predecessors(node), Maps.asMap(graph.successors(node), edgeValueFn))
+                : UndirectedGraphConnections.ofImmutable(
+                Maps.asMap(graph.adjacentNodes(node), edgeValueFn));
+    }
+
+    @Override
+    protected BaseGraph<N> delegate() {
+        return backingGraph;
+    }
 }

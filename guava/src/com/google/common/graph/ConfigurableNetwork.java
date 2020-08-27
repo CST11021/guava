@@ -25,6 +25,7 @@ import static com.google.common.graph.GraphConstants.NODE_NOT_IN_GRAPH;
 
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.collect.ImmutableSet;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -43,162 +44,164 @@ import javax.annotation.Nullable;
  *
  * <p>The time complexity of all collection-returning accessors is O(1), since views are returned.
  *
+ * @param <N> Node parameter type
+ * @param <E> Edge parameter type
  * @author James Sexton
  * @author Joshua O'Madadhain
  * @author Omar Darwish
- * @param <N> Node parameter type
- * @param <E> Edge parameter type
  */
 @GwtIncompatible
 class ConfigurableNetwork<N, E> extends AbstractNetwork<N, E> {
-  private final boolean isDirected;
-  private final boolean allowsParallelEdges;
-  private final boolean allowsSelfLoops;
-  private final ElementOrder<N> nodeOrder;
-  private final ElementOrder<E> edgeOrder;
+    private final boolean isDirected;
+    private final boolean allowsParallelEdges;
+    private final boolean allowsSelfLoops;
+    private final ElementOrder<N> nodeOrder;
+    private final ElementOrder<E> edgeOrder;
 
-  protected final MapIteratorCache<N, NetworkConnections<N, E>> nodeConnections;
+    protected final MapIteratorCache<N, NetworkConnections<N, E>> nodeConnections;
 
-  // We could make this a Map<E, EndpointPair<N>>. It would make incidentNodes(edge) slightly
-  // faster, but also make Networks consume 5 to 20+% (increasing with average degree) more memory.
-  protected final MapIteratorCache<E, N> edgeToReferenceNode; // referenceNode == source if directed
+    // We could make this a Map<E, EndpointPair<N>>. It would make incidentNodes(edge) slightly
+    // faster, but also make Networks consume 5 to 20+% (increasing with average degree) more memory.
+    protected final MapIteratorCache<E, N> edgeToReferenceNode; // referenceNode == source if directed
 
-  /** Constructs a graph with the properties specified in {@code builder}. */
-  ConfigurableNetwork(NetworkBuilder<? super N, ? super E> builder) {
-    this(
-        builder,
-        builder.nodeOrder.<N, NetworkConnections<N, E>>createMap(
-            builder.expectedNodeCount.or(DEFAULT_NODE_COUNT)),
-        builder.edgeOrder.<E, N>createMap(builder.expectedEdgeCount.or(DEFAULT_EDGE_COUNT)));
-  }
-
-  /**
-   * Constructs a graph with the properties specified in {@code builder}, initialized with the given
-   * node and edge maps.
-   */
-  ConfigurableNetwork(
-      NetworkBuilder<? super N, ? super E> builder,
-      Map<N, NetworkConnections<N, E>> nodeConnections,
-      Map<E, N> edgeToReferenceNode) {
-    this.isDirected = builder.directed;
-    this.allowsParallelEdges = builder.allowsParallelEdges;
-    this.allowsSelfLoops = builder.allowsSelfLoops;
-    this.nodeOrder = builder.nodeOrder.cast();
-    this.edgeOrder = builder.edgeOrder.cast();
-    // Prefer the heavier "MapRetrievalCache" for nodes if lookup is expensive. This optimizes
-    // methods that access the same node(s) repeatedly, such as Graphs.removeEdgesConnecting().
-    this.nodeConnections =
-        (nodeConnections instanceof TreeMap)
-            ? new MapRetrievalCache<N, NetworkConnections<N, E>>(nodeConnections)
-            : new MapIteratorCache<N, NetworkConnections<N, E>>(nodeConnections);
-    this.edgeToReferenceNode = new MapIteratorCache<E, N>(edgeToReferenceNode);
-  }
-
-  @Override
-  public Set<N> nodes() {
-    return nodeConnections.unmodifiableKeySet();
-  }
-
-  @Override
-  public Set<E> edges() {
-    return edgeToReferenceNode.unmodifiableKeySet();
-  }
-
-  @Override
-  public boolean isDirected() {
-    return isDirected;
-  }
-
-  @Override
-  public boolean allowsParallelEdges() {
-    return allowsParallelEdges;
-  }
-
-  @Override
-  public boolean allowsSelfLoops() {
-    return allowsSelfLoops;
-  }
-
-  @Override
-  public ElementOrder<N> nodeOrder() {
-    return nodeOrder;
-  }
-
-  @Override
-  public ElementOrder<E> edgeOrder() {
-    return edgeOrder;
-  }
-
-  @Override
-  public Set<E> incidentEdges(N node) {
-    return checkedConnections(node).incidentEdges();
-  }
-
-  @Override
-  public EndpointPair<N> incidentNodes(E edge) {
-    N nodeU = checkedReferenceNode(edge);
-    N nodeV = nodeConnections.get(nodeU).adjacentNode(edge);
-    return EndpointPair.of(this, nodeU, nodeV);
-  }
-
-  @Override
-  public Set<N> adjacentNodes(N node) {
-    return checkedConnections(node).adjacentNodes();
-  }
-
-  @Override
-  public Set<E> edgesConnecting(N nodeU, N nodeV) {
-    NetworkConnections<N, E> connectionsU = checkedConnections(nodeU);
-    if (!allowsSelfLoops && nodeU == nodeV) { // just an optimization, only check reference equality
-      return ImmutableSet.of();
+    /**
+     * Constructs a graph with the properties specified in {@code builder}.
+     */
+    ConfigurableNetwork(NetworkBuilder<? super N, ? super E> builder) {
+        this(
+                builder,
+                builder.nodeOrder.<N, NetworkConnections<N, E>>createMap(
+                        builder.expectedNodeCount.or(DEFAULT_NODE_COUNT)),
+                builder.edgeOrder.<E, N>createMap(builder.expectedEdgeCount.or(DEFAULT_EDGE_COUNT)));
     }
-    checkArgument(containsNode(nodeV), NODE_NOT_IN_GRAPH, nodeV);
-    return connectionsU.edgesConnecting(nodeV);
-  }
 
-  @Override
-  public Set<E> inEdges(N node) {
-    return checkedConnections(node).inEdges();
-  }
-
-  @Override
-  public Set<E> outEdges(N node) {
-    return checkedConnections(node).outEdges();
-  }
-
-  @Override
-  public Set<N> predecessors(N node) {
-    return checkedConnections(node).predecessors();
-  }
-
-  @Override
-  public Set<N> successors(N node) {
-    return checkedConnections(node).successors();
-  }
-
-  protected final NetworkConnections<N, E> checkedConnections(N node) {
-    NetworkConnections<N, E> connections = nodeConnections.get(node);
-    if (connections == null) {
-      checkNotNull(node);
-      throw new IllegalArgumentException(String.format(NODE_NOT_IN_GRAPH, node));
+    /**
+     * Constructs a graph with the properties specified in {@code builder}, initialized with the given
+     * node and edge maps.
+     */
+    ConfigurableNetwork(
+            NetworkBuilder<? super N, ? super E> builder,
+            Map<N, NetworkConnections<N, E>> nodeConnections,
+            Map<E, N> edgeToReferenceNode) {
+        this.isDirected = builder.directed;
+        this.allowsParallelEdges = builder.allowsParallelEdges;
+        this.allowsSelfLoops = builder.allowsSelfLoops;
+        this.nodeOrder = builder.nodeOrder.cast();
+        this.edgeOrder = builder.edgeOrder.cast();
+        // Prefer the heavier "MapRetrievalCache" for nodes if lookup is expensive. This optimizes
+        // methods that access the same node(s) repeatedly, such as Graphs.removeEdgesConnecting().
+        this.nodeConnections =
+                (nodeConnections instanceof TreeMap)
+                        ? new MapRetrievalCache<N, NetworkConnections<N, E>>(nodeConnections)
+                        : new MapIteratorCache<N, NetworkConnections<N, E>>(nodeConnections);
+        this.edgeToReferenceNode = new MapIteratorCache<E, N>(edgeToReferenceNode);
     }
-    return connections;
-  }
 
-  protected final N checkedReferenceNode(E edge) {
-    N referenceNode = edgeToReferenceNode.get(edge);
-    if (referenceNode == null) {
-      checkNotNull(edge);
-      throw new IllegalArgumentException(String.format(EDGE_NOT_IN_GRAPH, edge));
+    @Override
+    public Set<N> nodes() {
+        return nodeConnections.unmodifiableKeySet();
     }
-    return referenceNode;
-  }
 
-  protected final boolean containsNode(@Nullable N node) {
-    return nodeConnections.containsKey(node);
-  }
+    @Override
+    public Set<E> edges() {
+        return edgeToReferenceNode.unmodifiableKeySet();
+    }
 
-  protected final boolean containsEdge(@Nullable E edge) {
-    return edgeToReferenceNode.containsKey(edge);
-  }
+    @Override
+    public boolean isDirected() {
+        return isDirected;
+    }
+
+    @Override
+    public boolean allowsParallelEdges() {
+        return allowsParallelEdges;
+    }
+
+    @Override
+    public boolean allowsSelfLoops() {
+        return allowsSelfLoops;
+    }
+
+    @Override
+    public ElementOrder<N> nodeOrder() {
+        return nodeOrder;
+    }
+
+    @Override
+    public ElementOrder<E> edgeOrder() {
+        return edgeOrder;
+    }
+
+    @Override
+    public Set<E> incidentEdges(N node) {
+        return checkedConnections(node).incidentEdges();
+    }
+
+    @Override
+    public EndpointPair<N> incidentNodes(E edge) {
+        N nodeU = checkedReferenceNode(edge);
+        N nodeV = nodeConnections.get(nodeU).adjacentNode(edge);
+        return EndpointPair.of(this, nodeU, nodeV);
+    }
+
+    @Override
+    public Set<N> adjacentNodes(N node) {
+        return checkedConnections(node).adjacentNodes();
+    }
+
+    @Override
+    public Set<E> edgesConnecting(N nodeU, N nodeV) {
+        NetworkConnections<N, E> connectionsU = checkedConnections(nodeU);
+        if (!allowsSelfLoops && nodeU == nodeV) { // just an optimization, only check reference equality
+            return ImmutableSet.of();
+        }
+        checkArgument(containsNode(nodeV), NODE_NOT_IN_GRAPH, nodeV);
+        return connectionsU.edgesConnecting(nodeV);
+    }
+
+    @Override
+    public Set<E> inEdges(N node) {
+        return checkedConnections(node).inEdges();
+    }
+
+    @Override
+    public Set<E> outEdges(N node) {
+        return checkedConnections(node).outEdges();
+    }
+
+    @Override
+    public Set<N> predecessors(N node) {
+        return checkedConnections(node).predecessors();
+    }
+
+    @Override
+    public Set<N> successors(N node) {
+        return checkedConnections(node).successors();
+    }
+
+    protected final NetworkConnections<N, E> checkedConnections(N node) {
+        NetworkConnections<N, E> connections = nodeConnections.get(node);
+        if (connections == null) {
+            checkNotNull(node);
+            throw new IllegalArgumentException(String.format(NODE_NOT_IN_GRAPH, node));
+        }
+        return connections;
+    }
+
+    protected final N checkedReferenceNode(E edge) {
+        N referenceNode = edgeToReferenceNode.get(edge);
+        if (referenceNode == null) {
+            checkNotNull(edge);
+            throw new IllegalArgumentException(String.format(EDGE_NOT_IN_GRAPH, edge));
+        }
+        return referenceNode;
+    }
+
+    protected final boolean containsNode(@Nullable N node) {
+        return nodeConnections.containsKey(node);
+    }
+
+    protected final boolean containsEdge(@Nullable E edge) {
+        return edgeToReferenceNode.containsKey(edge);
+    }
 }

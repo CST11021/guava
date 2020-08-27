@@ -16,6 +16,7 @@ package com.google.common.util.concurrent;
 
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.GwtCompatible;
+
 import java.util.concurrent.Future;
 
 /**
@@ -31,12 +32,12 @@ import java.util.concurrent.Future;
 @FunctionalInterface
 @GwtCompatible
 public interface AsyncCallable<V> {
-  /**
-   * Computes a result {@code Future}. The output {@code Future} need not be {@linkplain
-   * Future#isDone done}, making {@code AsyncCallable} suitable for asynchronous derivations.
-   *
-   * <p>Throwing an exception from this method is equivalent to returning a failing {@link
-   * ListenableFuture}.
-   */
-  ListenableFuture<V> call() throws Exception;
+    /**
+     * Computes a result {@code Future}. The output {@code Future} need not be {@linkplain
+     * Future#isDone done}, making {@code AsyncCallable} suitable for asynchronous derivations.
+     *
+     * <p>Throwing an exception from this method is equivalent to returning a failing {@link
+     * ListenableFuture}.
+     */
+    ListenableFuture<V> call() throws Exception;
 }

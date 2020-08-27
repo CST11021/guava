@@ -17,6 +17,7 @@ package com.google.common.util.concurrent;
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.base.Preconditions;
 import com.google.j2objc.annotations.WeakOuter;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.concurrent.Executor;
@@ -45,162 +46,164 @@ import javax.annotation.concurrent.GuardedBy;
  */
 @GwtIncompatible
 final class SerializingExecutor implements Executor {
-  private static final Logger log = Logger.getLogger(SerializingExecutor.class.getName());
+    private static final Logger log = Logger.getLogger(SerializingExecutor.class.getName());
 
-  /** Underlying executor that all submitted Runnable objects are run on. */
-  private final Executor executor;
+    /**
+     * Underlying executor that all submitted Runnable objects are run on.
+     */
+    private final Executor executor;
 
-  @GuardedBy("queue")
-  private final Deque<Runnable> queue = new ArrayDeque<Runnable>();
+    @GuardedBy("queue")
+    private final Deque<Runnable> queue = new ArrayDeque<Runnable>();
 
-  @GuardedBy("queue")
-  private boolean isWorkerRunning = false;
+    @GuardedBy("queue")
+    private boolean isWorkerRunning = false;
 
-  @GuardedBy("queue")
-  private int suspensions = 0;
+    @GuardedBy("queue")
+    private int suspensions = 0;
 
-  private final QueueWorker worker = new QueueWorker();
+    private final QueueWorker worker = new QueueWorker();
 
-  public SerializingExecutor(Executor executor) {
-    this.executor = Preconditions.checkNotNull(executor);
-  }
-
-  /**
-   * Adds a task to the queue and makes sure a worker thread is running, unless the queue has been
-   * suspended.
-   *
-   * <p>If this method throws, e.g. a {@code RejectedExecutionException} from the delegate executor,
-   * execution of tasks will stop until a call to this method or to {@link #resume()} is made.
-   */
-  @Override
-  public void execute(Runnable task) {
-    synchronized (queue) {
-      queue.addLast(task);
-      if (isWorkerRunning || suspensions > 0) {
-        return;
-      }
-      isWorkerRunning = true;
+    public SerializingExecutor(Executor executor) {
+        this.executor = Preconditions.checkNotNull(executor);
     }
-    startQueueWorker();
-  }
 
-  /**
-   * Prepends a task to the front of the queue and makes sure a worker thread is running, unless the
-   * queue has been suspended.
-   */
-  public void executeFirst(Runnable task) {
-    synchronized (queue) {
-      queue.addFirst(task);
-      if (isWorkerRunning || suspensions > 0) {
-        return;
-      }
-      isWorkerRunning = true;
-    }
-    startQueueWorker();
-  }
-
-  /**
-   * Suspends the running of tasks until {@link #resume()} is called. This can be called multiple
-   * times to increase the suspensions count and execution will not continue until {@link #resume}
-   * has been called the same number of times as {@code suspend} has been.
-   *
-   * <p>Any task that has already been pulled off the queue for execution will be completed before
-   * execution is suspended.
-   */
-  public void suspend() {
-    synchronized (queue) {
-      suspensions++;
-    }
-  }
-
-  /**
-   * Continue execution of tasks after a call to {@link #suspend()}. More accurately, decreases the
-   * suspension counter, as has been incremented by calls to {@link #suspend}, and resumes execution
-   * if the suspension counter is zero.
-   *
-   * <p>If this method throws, e.g. a {@code RejectedExecutionException} from the delegate executor,
-   * execution of tasks will stop until a call to this method or to {@link #execute(Runnable)} or
-   * {@link #executeFirst(Runnable)} is made.
-   *
-   * @throws java.lang.IllegalStateException if this executor is not suspended.
-   */
-  public void resume() {
-    synchronized (queue) {
-      Preconditions.checkState(suspensions > 0);
-      suspensions--;
-      if (isWorkerRunning || suspensions > 0 || queue.isEmpty()) {
-        return;
-      }
-      isWorkerRunning = true;
-    }
-    startQueueWorker();
-  }
-
-  /**
-   * Starts a worker.  This should only be called if:
-   *
-   * <ul>
-   *   <li>{@code suspensions == 0}
-   *   <li>{@code isWorkerRunning == true}
-   *   <li>{@code !queue.isEmpty()}
-   *   <li>the {@link #worker} lock is not held
-   * </ul>
-   */
-  private void startQueueWorker() {
-    boolean executionRejected = true;
-    try {
-      executor.execute(worker);
-      executionRejected = false;
-    } finally {
-      if (executionRejected) {
-        // The best we can do is to stop executing the queue, but reset the state so that
-        // execution can be resumed later if the caller so wishes.
-        synchronized (queue) {
-          isWorkerRunning = false;
-        }
-      }
-    }
-  }
-
-  /**
-   * Worker that runs tasks off the queue until it is empty or the queue is suspended.
-   */
-  @WeakOuter
-  private final class QueueWorker implements Runnable {
+    /**
+     * Adds a task to the queue and makes sure a worker thread is running, unless the queue has been
+     * suspended.
+     *
+     * <p>If this method throws, e.g. a {@code RejectedExecutionException} from the delegate executor,
+     * execution of tasks will stop until a call to this method or to {@link #resume()} is made.
+     */
     @Override
-    public void run() {
-      try {
-        workOnQueue();
-      } catch (Error e) {
+    public void execute(Runnable task) {
         synchronized (queue) {
-          isWorkerRunning = false;
+            queue.addLast(task);
+            if (isWorkerRunning || suspensions > 0) {
+                return;
+            }
+            isWorkerRunning = true;
         }
-        throw e;
-        // The execution of a task has ended abnormally.
-        // We could have tasks left in the queue, so should perhaps try to restart a worker,
-        // but then the Error will get delayed if we are using a direct (same thread) executor.
-      }
+        startQueueWorker();
     }
 
-    private void workOnQueue() {
-      while (true) {
-        Runnable task = null;
+    /**
+     * Prepends a task to the front of the queue and makes sure a worker thread is running, unless the
+     * queue has been suspended.
+     */
+    public void executeFirst(Runnable task) {
         synchronized (queue) {
-          // TODO(user): How should we handle interrupts and shutdowns?
-          if (suspensions == 0) {
-            task = queue.pollFirst();
-          }
-          if (task == null) {
-            isWorkerRunning = false;
-            return;
-          }
+            queue.addFirst(task);
+            if (isWorkerRunning || suspensions > 0) {
+                return;
+            }
+            isWorkerRunning = true;
         }
-        try {
-          task.run();
-        } catch (RuntimeException e) {
-          log.log(Level.SEVERE, "Exception while executing runnable " + task, e);
-        }
-      }
+        startQueueWorker();
     }
-  }
+
+    /**
+     * Suspends the running of tasks until {@link #resume()} is called. This can be called multiple
+     * times to increase the suspensions count and execution will not continue until {@link #resume}
+     * has been called the same number of times as {@code suspend} has been.
+     *
+     * <p>Any task that has already been pulled off the queue for execution will be completed before
+     * execution is suspended.
+     */
+    public void suspend() {
+        synchronized (queue) {
+            suspensions++;
+        }
+    }
+
+    /**
+     * Continue execution of tasks after a call to {@link #suspend()}. More accurately, decreases the
+     * suspension counter, as has been incremented by calls to {@link #suspend}, and resumes execution
+     * if the suspension counter is zero.
+     *
+     * <p>If this method throws, e.g. a {@code RejectedExecutionException} from the delegate executor,
+     * execution of tasks will stop until a call to this method or to {@link #execute(Runnable)} or
+     * {@link #executeFirst(Runnable)} is made.
+     *
+     * @throws java.lang.IllegalStateException if this executor is not suspended.
+     */
+    public void resume() {
+        synchronized (queue) {
+            Preconditions.checkState(suspensions > 0);
+            suspensions--;
+            if (isWorkerRunning || suspensions > 0 || queue.isEmpty()) {
+                return;
+            }
+            isWorkerRunning = true;
+        }
+        startQueueWorker();
+    }
+
+    /**
+     * Starts a worker.  This should only be called if:
+     *
+     * <ul>
+     * <li>{@code suspensions == 0}
+     * <li>{@code isWorkerRunning == true}
+     * <li>{@code !queue.isEmpty()}
+     * <li>the {@link #worker} lock is not held
+     * </ul>
+     */
+    private void startQueueWorker() {
+        boolean executionRejected = true;
+        try {
+            executor.execute(worker);
+            executionRejected = false;
+        } finally {
+            if (executionRejected) {
+                // The best we can do is to stop executing the queue, but reset the state so that
+                // execution can be resumed later if the caller so wishes.
+                synchronized (queue) {
+                    isWorkerRunning = false;
+                }
+            }
+        }
+    }
+
+    /**
+     * Worker that runs tasks off the queue until it is empty or the queue is suspended.
+     */
+    @WeakOuter
+    private final class QueueWorker implements Runnable {
+        @Override
+        public void run() {
+            try {
+                workOnQueue();
+            } catch (Error e) {
+                synchronized (queue) {
+                    isWorkerRunning = false;
+                }
+                throw e;
+                // The execution of a task has ended abnormally.
+                // We could have tasks left in the queue, so should perhaps try to restart a worker,
+                // but then the Error will get delayed if we are using a direct (same thread) executor.
+            }
+        }
+
+        private void workOnQueue() {
+            while (true) {
+                Runnable task = null;
+                synchronized (queue) {
+                    // TODO(user): How should we handle interrupts and shutdowns?
+                    if (suspensions == 0) {
+                        task = queue.pollFirst();
+                    }
+                    if (task == null) {
+                        isWorkerRunning = false;
+                        return;
+                    }
+                }
+                try {
+                    task.run();
+                } catch (RuntimeException e) {
+                    log.log(Level.SEVERE, "Exception while executing runnable " + task, e);
+                }
+            }
+        }
+    }
 }

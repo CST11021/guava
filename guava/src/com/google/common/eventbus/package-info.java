@@ -31,37 +31,37 @@
  * <p>To listen for a specific flavor of event (say, a CustomerChangeEvent)...
  * <ul>
  * <li><strong>...in traditional Java events:</strong> implement an interface defined with the event
- *     &mdash; such as CustomerChangeEventListener.
+ * &mdash; such as CustomerChangeEventListener.
  * <li><strong>...with EventBus:</strong> create a method that accepts CustomerChangeEvent as its
- *     sole argument, and mark it with the {@link com.google.common.eventbus.Subscribe}
- *     annotation.
+ * sole argument, and mark it with the {@link com.google.common.eventbus.Subscribe}
+ * annotation.
  * </ul>
  *
  * <p>To register your listener methods with the event producers...
  * <ul>
  * <li><strong>...in traditional Java events:</strong> pass your object to each producer's
- *     {@code registerCustomerChangeEventListener} method. These methods are rarely defined in
- *     common interfaces, so in addition to knowing every possible producer, you must also know its
- *     type.
+ * {@code registerCustomerChangeEventListener} method. These methods are rarely defined in
+ * common interfaces, so in addition to knowing every possible producer, you must also know its
+ * type.
  * <li><strong>...with EventBus:</strong> pass your object to the
- *     {@link com.google.common.eventbus.EventBus#register(Object)} method on an EventBus. You'll
- *     need to make sure that your object shares an EventBus instance with the event producers.
+ * {@link com.google.common.eventbus.EventBus#register(Object)} method on an EventBus. You'll
+ * need to make sure that your object shares an EventBus instance with the event producers.
  * </ul>
  *
  * <p>To listen for a common event supertype (such as EventObject or Object)...
  * <ul>
  * <li><strong>...in traditional Java events:</strong> not easy.
  * <li><strong>...with EventBus:</strong> events are automatically dispatched to listeners of any
- *     supertype, allowing listeners for interface types or "wildcard listeners" for Object.
+ * supertype, allowing listeners for interface types or "wildcard listeners" for Object.
  * </ul>
  *
  * <p>To listen for and detect events that were dispatched without listeners...
  * <ul>
  * <li><strong>...in traditional Java events:</strong> add code to each event-dispatching method
- *     (perhaps using AOP).
+ * (perhaps using AOP).
  * <li><strong>...with EventBus:</strong> subscribe to {@link com.google.common.eventbus.DeadEvent}.
- *     The EventBus will notify you of any events that were posted but not delivered. (Handy for
- *     debugging.)
+ * The EventBus will notify you of any events that were posted but not delivered. (Handy for
+ * debugging.)
  * </ul>
  *
  * <h3>For Producers</h3>
@@ -69,16 +69,16 @@
  * <p>To keep track of listeners to your events...
  * <ul>
  * <li><strong>...in traditional Java events:</strong> write code to manage a list of listeners to
- *     your object, including synchronization, or use a utility class like EventListenerList.
+ * your object, including synchronization, or use a utility class like EventListenerList.
  * <li><strong>...with EventBus:</strong> EventBus does this for you.
  * </ul>
  *
  * <p>To dispatch an event to listeners...
  * <ul>
  * <li><strong>...in traditional Java events:</strong> write a method to dispatch events to each
- *     event listener, including error isolation and (if desired) asynchronicity.
+ * event listener, including error isolation and (if desired) asynchronicity.
  * <li><strong>...with EventBus:</strong> pass the event object to an EventBus's
- *     {@link com.google.common.eventbus.EventBus#post(Object)} method.
+ * {@link com.google.common.eventbus.EventBus#post(Object)} method.
  * </ul>
  *
  * <h2>Glossary</h2>
@@ -91,14 +91,14 @@
  *
  * <dt>Subscribing
  * <dd>The act of registering a <em>listener</em> with an EventBus, so that its
- *     <em>subscriber methods</em> will receive events.
+ * <em>subscriber methods</em> will receive events.
  *
  * <dt>Listener
  * <dd>An object that wishes to receive events, by exposing <em>subscriber methods</em>.
  *
  * <dt>Subscriber method
  * <dd>A public method that the EventBus should use to deliver <em>posted</em> events. Subscriber
- *     methods are marked by the {@link com.google.common.eventbus.Subscribe} annotation.
+ * methods are marked by the {@link com.google.common.eventbus.Subscribe} annotation.
  *
  * <dt>Posting an event
  * <dd>Making the event available to any <em>listeners</em> through the EventBus.
@@ -133,9 +133,9 @@
  * <li>Any one class can only implement a single response to a given event.
  * <li>Listener interface methods may conflict.
  * <li>The method must be named after the event (e.g. {@code handleChangeEvent}), rather than its
- *     purpose (e.g. {@code recordChangeInJournal}).
+ * purpose (e.g. {@code recordChangeInJournal}).
  * <li>Each event usually has its own interface, without a common parent interface for a family of
- *     events (e.g. all UI events).
+ * events (e.g. all UI events).
  * </ul>
  *
  * <p>The difficulties in implementing this cleanly has given rise to a pattern, particularly common

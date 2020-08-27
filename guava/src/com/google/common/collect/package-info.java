@@ -24,54 +24,54 @@
  * <dl>
  * <dt>{@link com.google.common.collect.BiMap}
  * <dd>An extension of {@link java.util.Map} that guarantees the uniqueness of
- *     its values as well as that of its keys. This is sometimes called an
- *     "invertible map," since the restriction on values enables it to support
- *     an {@linkplain com.google.common.collect.BiMap#inverse inverse view} --
- *     which is another instance of {@code BiMap}.
+ * its values as well as that of its keys. This is sometimes called an
+ * "invertible map," since the restriction on values enables it to support
+ * an {@linkplain com.google.common.collect.BiMap#inverse inverse view} --
+ * which is another instance of {@code BiMap}.
  *
  * <dt>{@link com.google.common.collect.Multiset}
  * <dd>An extension of {@link java.util.Collection} that may contain duplicate
- *     values like a {@link java.util.List}, yet has order-independent equality
- *     like a {@link java.util.Set}.  One typical use for a multiset is to
- *     represent a histogram.
+ * values like a {@link java.util.List}, yet has order-independent equality
+ * like a {@link java.util.Set}.  One typical use for a multiset is to
+ * represent a histogram.
  *
  * <dt>{@link com.google.common.collect.Multimap}
  * <dd>A new type, which is similar to {@link java.util.Map}, but may contain
- *     multiple entries with the same key. Some behaviors of
- *     {@link com.google.common.collect.Multimap} are left unspecified and are
- *     provided only by the subtypes mentioned below.
+ * multiple entries with the same key. Some behaviors of
+ * {@link com.google.common.collect.Multimap} are left unspecified and are
+ * provided only by the subtypes mentioned below.
  *
  * <dt>{@link com.google.common.collect.ListMultimap}
  * <dd>An extension of {@link com.google.common.collect.Multimap} which permits
- *     duplicate entries, supports random access of values for a particular key,
- *     and has <i>partially order-dependent equality</i> as defined by
- *     {@link com.google.common.collect.ListMultimap#equals(Object)}. {@code
- *     ListMultimap} takes its name from the fact that the {@linkplain
- *     com.google.common.collect.ListMultimap#get collection of values}
- *     associated with a given key fulfills the {@link java.util.List} contract.
+ * duplicate entries, supports random access of values for a particular key,
+ * and has <i>partially order-dependent equality</i> as defined by
+ * {@link com.google.common.collect.ListMultimap#equals(Object)}. {@code
+ * ListMultimap} takes its name from the fact that the {@linkplain
+ * com.google.common.collect.ListMultimap#get collection of values}
+ * associated with a given key fulfills the {@link java.util.List} contract.
  *
  * <dt>{@link com.google.common.collect.SetMultimap}
  * <dd>An extension of {@link com.google.common.collect.Multimap} which has
- *     order-independent equality and does not allow duplicate entries; that is,
- *     while a key may appear twice in a {@code SetMultimap}, each must map to a
- *     different value.  {@code SetMultimap} takes its name from the fact that
- *     the {@linkplain com.google.common.collect.SetMultimap#get collection of
- *     values} associated with a given key fulfills the {@link java.util.Set}
- *     contract.
+ * order-independent equality and does not allow duplicate entries; that is,
+ * while a key may appear twice in a {@code SetMultimap}, each must map to a
+ * different value.  {@code SetMultimap} takes its name from the fact that
+ * the {@linkplain com.google.common.collect.SetMultimap#get collection of
+ * values} associated with a given key fulfills the {@link java.util.Set}
+ * contract.
  *
  * <dt>{@link com.google.common.collect.SortedSetMultimap}
  * <dd>An extension of {@link com.google.common.collect.SetMultimap} for which
- *     the {@linkplain com.google.common.collect.SortedSetMultimap#get
- *     collection values} associated with a given key is a
- *     {@link java.util.SortedSet}.
+ * the {@linkplain com.google.common.collect.SortedSetMultimap#get
+ * collection values} associated with a given key is a
+ * {@link java.util.SortedSet}.
  *
  * <dt>{@link com.google.common.collect.Table}
  * <dd>A new type, which is similar to {@link java.util.Map}, but which indexes
- *     its values by an ordered pair of keys, a row key and column key.
+ * its values by an ordered pair of keys, a row key and column key.
  *
  * <dt>{@link com.google.common.collect.ClassToInstanceMap}
  * <dd>An extension of {@link java.util.Map} that associates a raw type with an
- *     instance of that type.
+ * instance of that type.
  * </dl>
  *
  * <h2>Collection Implementations</h2>
@@ -185,9 +185,9 @@
  *
  * <ul>
  * <li>{@link com.google.common.collect.Interner},
- *     {@link com.google.common.collect.Interners}
+ * {@link com.google.common.collect.Interners}
  * <li>{@link com.google.common.collect.MapDifference},
- *     {@link com.google.common.collect.SortedMapDifference}
+ * {@link com.google.common.collect.SortedMapDifference}
  * <li>{@link com.google.common.collect.MinMaxPriorityQueue}
  * <li>{@link com.google.common.collect.PeekingIterator}
  * </ul>

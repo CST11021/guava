@@ -26,13 +26,13 @@ import com.google.common.annotations.Beta;
  * topological sort) that only need a way of accessing the predecessors of a node in a graph.
  *
  * <h3>Usage</h3>
- *
+ * <p>
  * Given an algorithm, for example:
  *
  * <pre>{@code
  *   public <N> someGraphAlgorithm(N startNode, PredecessorsFunction<N> predecessorsFunction);
  * }</pre>
- *
+ * <p>
  * you will invoke it depending on the graph representation you're using.
  *
  * <p>If you have an instance of one of the primary {@code common.graph} types ({@link Graph},
@@ -41,7 +41,7 @@ import com.google.common.annotations.Beta;
  * <pre>{@code
  *   someGraphAlgorithm(startNode, graph);
  * }</pre>
- *
+ * <p>
  * This works because those types each implement {@code PredecessorsFunction}. It will also work
  * with any other implementation of this interface.
  *
@@ -72,24 +72,24 @@ import com.google.common.annotations.Beta;
  * href="https://github.com/google/guava/wiki/GraphsExplained#notes-for-implementors">notes for
  * implementors</a>
  *
+ * @param <N> Node parameter type
  * @author Joshua O'Madadhain
  * @author Jens Nyman
- * @param <N> Node parameter type
  * @since 23.0
  */
 // TODO(b/35456940): Update the documentation to reflect the new interfaces
 @Beta
 public interface PredecessorsFunction<N> {
 
-  /**
-   * Returns all nodes in this graph adjacent to {@code node} which can be reached by traversing
-   * {@code node}'s incoming edges <i>against</i> the direction (if any) of the edge.
-   *
-   * <p>Some algorithms that operate on a {@code PredecessorsFunction} may produce undesired results
-   * if the returned {@link Iterable} contains duplicate elements. Implementations of such
-   * algorithms should document their behavior in the presence of duplicates.
-   *
-   * @throws IllegalArgumentException if {@code node} is not an element of this graph
-   */
-  Iterable<? extends N> predecessors(N node);
+    /**
+     * Returns all nodes in this graph adjacent to {@code node} which can be reached by traversing
+     * {@code node}'s incoming edges <i>against</i> the direction (if any) of the edge.
+     *
+     * <p>Some algorithms that operate on a {@code PredecessorsFunction} may produce undesired results
+     * if the returned {@link Iterable} contains duplicate elements. Implementations of such
+     * algorithms should document their behavior in the presence of duplicates.
+     *
+     * @throws IllegalArgumentException if {@code node} is not an element of this graph
+     */
+    Iterable<? extends N> predecessors(N node);
 }

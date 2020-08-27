@@ -15,6 +15,7 @@
 package com.google.common.collect;
 
 import com.google.common.annotations.GwtCompatible;
+
 import java.io.Serializable;
 import javax.annotation.Nullable;
 
@@ -25,46 +26,46 @@ import javax.annotation.Nullable;
  */
 @GwtCompatible
 final class Count implements Serializable {
-  private int value;
+    private int value;
 
-  Count(int value) {
-    this.value = value;
-  }
+    Count(int value) {
+        this.value = value;
+    }
 
-  public int get() {
-    return value;
-  }
+    public int get() {
+        return value;
+    }
 
-  public void add(int delta) {
-    value += delta;
-  }
+    public void add(int delta) {
+        value += delta;
+    }
 
-  public int addAndGet(int delta) {
-    return value += delta;
-  }
+    public int addAndGet(int delta) {
+        return value += delta;
+    }
 
-  public void set(int newValue) {
-    value = newValue;
-  }
+    public void set(int newValue) {
+        value = newValue;
+    }
 
-  public int getAndSet(int newValue) {
-    int result = value;
-    value = newValue;
-    return result;
-  }
+    public int getAndSet(int newValue) {
+        int result = value;
+        value = newValue;
+        return result;
+    }
 
-  @Override
-  public int hashCode() {
-    return value;
-  }
+    @Override
+    public int hashCode() {
+        return value;
+    }
 
-  @Override
-  public boolean equals(@Nullable Object obj) {
-    return obj instanceof Count && ((Count) obj).value == value;
-  }
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return obj instanceof Count && ((Count) obj).value == value;
+    }
 
-  @Override
-  public String toString() {
-    return Integer.toString(value);
-  }
+    @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
 }

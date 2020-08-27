@@ -15,6 +15,7 @@
 package com.google.common.base;
 
 import com.google.common.annotations.GwtIncompatible;
+
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 
@@ -30,15 +31,15 @@ import java.lang.ref.ReferenceQueue;
  */
 @GwtIncompatible
 public abstract class FinalizablePhantomReference<T> extends PhantomReference<T>
-    implements FinalizableReference {
-  /**
-   * Constructs a new finalizable phantom reference.
-   *
-   * @param referent to phantom reference
-   * @param queue that should finalize the referent
-   */
-  protected FinalizablePhantomReference(T referent, FinalizableReferenceQueue queue) {
-    super(referent, queue.queue);
-    queue.cleanUp();
-  }
+        implements FinalizableReference {
+    /**
+     * Constructs a new finalizable phantom reference.
+     *
+     * @param referent to phantom reference
+     * @param queue    that should finalize the referent
+     */
+    protected FinalizablePhantomReference(T referent, FinalizableReferenceQueue queue) {
+        super(referent, queue.queue);
+        queue.cleanUp();
+    }
 }
