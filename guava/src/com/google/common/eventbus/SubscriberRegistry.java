@@ -54,13 +54,11 @@ import javax.annotation.Nullable;
 final class SubscriberRegistry {
 
     /**
-     * All registered subscribers, indexed by event type.
+     * 事件/监听注册表：保存事件类型对应的监听器
      *
-     * <p>The {@link CopyOnWriteArraySet} values make it easy and relatively lightweight to get an
-     * immutable snapshot of all current subscribers to an event without any locking.
+     * CopyOnWriteArraySet用于替代遍历操作为主情况下的同步Set，CopyOnWriteArraySet使获取事件的所有当前订阅者的不变快照变得容易且相对轻便，而没有任何锁定.
      */
-    private final ConcurrentMap<Class<?>, CopyOnWriteArraySet<Subscriber>> subscribers =
-            Maps.newConcurrentMap();
+    private final ConcurrentMap<Class<?>, CopyOnWriteArraySet<Subscriber>> subscribers = Maps.newConcurrentMap();
 
     /**
      * The event bus this registry belongs to.
@@ -73,21 +71,26 @@ final class SubscriberRegistry {
     }
 
     /**
-     * Registers all subscriber methods on the given listener object.
+     * 注册{@code listener}类上所有的监听方法，以接收事件
+     *
+     * @param listener
      */
     void register(Object listener) {
+        // 获取监听类中，监听事件类型及对应的监听方法
         Multimap<Class<?>, Subscriber> listenerMethods = findAllSubscribers(listener);
 
         for (Map.Entry<Class<?>, Collection<Subscriber>> entry : listenerMethods.asMap().entrySet()) {
+            // 监听事件类型
             Class<?> eventType = entry.getKey();
+            // 监听方法
             Collection<Subscriber> eventMethodsInListener = entry.getValue();
 
+            // 将监听方法添加到注册表
             CopyOnWriteArraySet<Subscriber> eventSubscribers = subscribers.get(eventType);
-
             if (eventSubscribers == null) {
+                // CopyOnWriteArraySet用于替代遍历操作为主情况下的同步Set
                 CopyOnWriteArraySet<Subscriber> newSet = new CopyOnWriteArraySet<Subscriber>();
-                eventSubscribers =
-                        MoreObjects.firstNonNull(subscribers.putIfAbsent(eventType, newSet), newSet);
+                eventSubscribers = MoreObjects.firstNonNull(subscribers.putIfAbsent(eventType, newSet), newSet);
             }
 
             eventSubscribers.addAll(eventMethodsInListener);
@@ -163,23 +166,40 @@ final class SubscriberRegistry {
                             });
 
     /**
-     * 返回给定侦听器的所有订阅者（按其订阅的事件类型分组）
+     * 获取监听类中的所有监听方法，将对应的监听方法封装为Subscriber，并按其订阅的事件类型分组，注意：一个监听类型可以有多个监听方法
+     *
+     * @param listener
+     * @return Map<事件类型, List<监听器>>
      */
     private Multimap<Class<?>, Subscriber> findAllSubscribers(Object listener) {
         Multimap<Class<?>, Subscriber> methodsInListener = HashMultimap.create();
         Class<?> clazz = listener.getClass();
+        // 获取带有注解的方法，将第一个参数的类型，作为事件类型
         for (Method method : getAnnotatedMethods(clazz)) {
             Class<?>[] parameterTypes = method.getParameterTypes();
             Class<?> eventType = parameterTypes[0];
+            // 将对应的监听方法封装为Subscriber
             methodsInListener.put(eventType, Subscriber.create(bus, listener, method));
         }
         return methodsInListener;
     }
 
+    /**
+     * 获取类中带有@Subscribe注解的所有方法，该方法带有缓存，具体实现参考{@link #getAnnotatedMethodsNotCached(Class)}
+     *
+     * @param clazz
+     * @return
+     */
     private static ImmutableList<Method> getAnnotatedMethods(Class<?> clazz) {
         return subscriberMethodsCache.getUnchecked(clazz);
     }
 
+    /**
+     * 获取类中带有@Subscribe注解的所有方法
+     *
+     * @param clazz
+     * @return
+     */
     private static ImmutableList<Method> getAnnotatedMethodsNotCached(Class<?> clazz) {
         Set<? extends Class<?>> supertypes = TypeToken.of(clazz).getTypes().rawTypes();
         Map<MethodIdentifier, Method> identifiers = Maps.newHashMap();
@@ -217,8 +237,7 @@ final class SubscriberRegistry {
                                 @SuppressWarnings("RedundantTypeArguments")
                                 @Override
                                 public ImmutableSet<Class<?>> load(Class<?> concreteClass) {
-                                    return ImmutableSet.<Class<?>>copyOf(
-                                            TypeToken.of(concreteClass).getTypes().rawTypes());
+                                    return ImmutableSet.<Class<?>>copyOf(TypeToken.of(concreteClass).getTypes().rawTypes());
                                 }
                             });
 

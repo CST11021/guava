@@ -179,9 +179,9 @@ public class EventBus {
     }
 
     /**
-     * 在{@code object}上注册所有订阅者方法以接收事件。
+     * 注册{@code object}上所有的监听方法，以接收事件
      *
-     * @param object 应该注册其订户方法的对象
+     * @param object 监听方法的对象类
      */
     public void register(Object object) {
         subscribers.register(object);
@@ -208,6 +208,7 @@ public class EventBus {
      * @param event event to post.
      */
     public void post(Object event) {
+        // 获取监听该事件的所有的监听器
         Iterator<Subscriber> eventSubscribers = subscribers.getSubscribers(event);
         if (eventSubscribers.hasNext()) {
             dispatcher.dispatch(event, eventSubscribers);
