@@ -4917,8 +4917,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
      * Unfortunately, readResolve() doesn't get called when a circular dependency is present, so the
      * proxy must be able to behave as the cache itself.
      */
-    static class ManualSerializationProxy<K, V> extends ForwardingCache<K, V>
-            implements Serializable {
+    static class ManualSerializationProxy<K, V> extends ForwardingCache<K, V> implements Serializable {
         private static final long serialVersionUID = 1;
 
         final Strength keyStrength;
@@ -5035,8 +5034,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
      * Unfortunately, readResolve() doesn't get called when a circular dependency is present, so the
      * proxy must be able to behave as the cache itself.
      */
-    static final class LoadingSerializationProxy<K, V> extends ManualSerializationProxy<K, V>
-            implements LoadingCache<K, V>, Serializable {
+    static final class LoadingSerializationProxy<K, V> extends ManualSerializationProxy<K, V> implements LoadingCache<K, V>, Serializable {
         private static final long serialVersionUID = 1;
 
         transient LoadingCache<K, V> autoDelegate;
@@ -5178,8 +5176,7 @@ class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> 
         }
     }
 
-    static class LocalLoadingCache<K, V> extends LocalManualCache<K, V>
-            implements LoadingCache<K, V> {
+    static class LocalLoadingCache<K, V> extends LocalManualCache<K, V> implements LoadingCache<K, V> {
 
         LocalLoadingCache(
                 CacheBuilder<? super K, ? super V> builder, CacheLoader<? super K, V> loader) {

@@ -41,8 +41,7 @@ import javax.annotation.Nullable;
 public interface Cache<K, V> {
 
     /**
-     * Returns the value associated with {@code key} in this cache, or {@code null} if there is no
-     * cached value for {@code key}.
+     * 返回与此缓存中的{@code key}关联的值；如果没有{@code key}的缓存值，则返回{@code null}。
      *
      * @since 11.0
      */
@@ -50,101 +49,57 @@ public interface Cache<K, V> {
     V getIfPresent(Object key);
 
     /**
-     * Returns the value associated with {@code key} in this cache, obtaining that value from {@code
-     * loader} if necessary. The method improves upon the conventional "if cached, return; otherwise
-     * create, cache and return" pattern. For further improvements, use {@link LoadingCache} and its
-     * {@link LoadingCache#get(Object) get(K)} method instead of this one.
+     * 获取key对应的值，如果值不在缓存中，则调用Callable获取值，并将该值加入缓存
      *
-     * <p>Among the improvements that this method and {@code LoadingCache.get(K)} both provide are:
-     *
-     * <ul>
-     * <li>{@linkplain LoadingCache#get(Object) awaiting the result of a pending load} rather than
-     * starting a redundant one
-     * <li>eliminating the error-prone caching boilerplate
-     * <li>tracking load {@linkplain #stats statistics}
-     * </ul>
-     *
-     * <p>Among the further improvements that {@code LoadingCache} can provide but this method cannot:
-     *
-     * <ul>
-     * <li>consolidation of the loader logic to {@linkplain CacheBuilder#build(CacheLoader) a single
-     * authoritative location}
-     * <li>{@linkplain LoadingCache#refresh refreshing of entries}, including {@linkplain
-     * CacheBuilder#refreshAfterWrite automated refreshing}
-     * <li>{@linkplain LoadingCache#getAll bulk loading requests}, including {@linkplain
-     * CacheLoader#loadAll bulk loading implementations}
-     * </ul>
-     *
-     * <p><b>Warning:</b> For any given key, every {@code loader} used with it should compute the same
-     * value. Otherwise, a call that passes one {@code loader} may return the result of another call
-     * with a differently behaving {@code loader}. For example, a call that requests a short timeout
-     * for an RPC may wait for a similar call that requests a long timeout, or a call by an
-     * unprivileged user may return a resource accessible only to a privileged user making a similar
-     * call. To prevent this problem, create a key object that includes all values that affect the
-     * result of the query. Or use {@code LoadingCache.get(K)}, which lacks the ability to refer to
-     * state other than that in the key.
-     *
-     * <p><b>Warning:</b> as with {@link CacheLoader#load}, {@code loader} <b>must not</b> return
-     * {@code null}; it may either return a non-null value or throw an exception.
-     *
-     * <p>No observable state associated with this cache is modified until loading completes.
-     *
-     * @throws ExecutionException          if a checked exception was thrown while loading the value
-     * @throws UncheckedExecutionException if an unchecked exception was thrown while loading the
-     *                                     value
-     * @throws ExecutionError              if an error was thrown while loading the value
-     * @since 11.0
+     * @param key
+     * @param loader
+     * @return
+     * @throws ExecutionException
      */
     V get(K key, Callable<? extends V> loader) throws ExecutionException;
 
     /**
-     * Returns a map of the values associated with {@code keys} in this cache. The returned map will
-     * only contain entries which are already present in the cache.
+     * 返回与此缓存中的{@code keys}关联的值的映射
      *
      * @since 11.0
      */
     ImmutableMap<K, V> getAllPresent(Iterable<?> keys);
 
     /**
-     * Associates {@code value} with {@code key} in this cache. If the cache previously contained a
-     * value associated with {@code key}, the old value is replaced by {@code value}.
-     *
-     * <p>Prefer {@link #get(Object, Callable)} when using the conventional "if cached, return;
-     * otherwise create, cache and return" pattern.
+     * 添加或更新缓存
      *
      * @since 11.0
      */
     void put(K key, V value);
 
     /**
-     * Copies all of the mappings from the specified map to the cache. The effect of this call is
-     * equivalent to that of calling {@code put(k, v)} on this map once for each mapping from key
-     * {@code k} to value {@code v} in the specified map. The behavior of this operation is undefined
-     * if the specified map is modified while the operation is in progress.
+     * 批量添加或更新缓存
      *
      * @since 12.0
      */
     void putAll(Map<? extends K, ? extends V> m);
 
     /**
-     * Discards any cached value for key {@code key}.
+     * 移除缓存
+     *
+     * @param key
      */
     void invalidate(Object key);
 
     /**
-     * Discards any cached values for keys {@code keys}.
+     * 批量移除缓存
      *
      * @since 11.0
      */
     void invalidateAll(Iterable<?> keys);
 
     /**
-     * Discards all entries in the cache.
+     * 移除所有的缓存
      */
     void invalidateAll();
 
     /**
-     * Returns the approximate number of entries in this cache.
+     * 获取缓存的数量
      */
     long size();
 
