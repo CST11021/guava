@@ -49,22 +49,20 @@ class Subscriber {
      */
     @Weak
     private EventBus bus;
-
     /**
      * The object with the subscriber method.
      */
     @VisibleForTesting
     final Object target;
-
     /**
      * Subscriber method.
      */
     private final Method method;
-
     /**
      * Executor to use for dispatching events to this subscriber.
      */
     private final Executor executor;
+
 
     private Subscriber(EventBus bus, Object target, Method method) {
         this.bus = bus;
@@ -79,22 +77,21 @@ class Subscriber {
      * Dispatches {@code event} to this subscriber using the proper executor.
      */
     final void dispatchEvent(final Object event) {
-        executor.execute(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            invokeSubscriberMethod(event);
-                        } catch (InvocationTargetException e) {
-                            bus.handleSubscriberException(e.getCause(), context(event));
-                        }
-                    }
-                });
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // 调用订阅事件的目标方法
+                    invokeSubscriberMethod(event);
+                } catch (InvocationTargetException e) {
+                    bus.handleSubscriberException(e.getCause(), context(event));
+                }
+            }
+        });
     }
 
     /**
-     * Invokes the subscriber method. This method can be overridden to make the invocation
-     * synchronized.
+     * 调用订阅者方法，可以重写此方法以使调用同步，仅测试使用
      */
     @VisibleForTesting
     void invokeSubscriberMethod(Object event) throws InvocationTargetException {
@@ -119,11 +116,14 @@ class Subscriber {
         return new SubscriberExceptionContext(bus, event, target, method);
     }
 
+
+
+
+
     @Override
     public final int hashCode() {
         return (31 + method.hashCode()) * 31 + System.identityHashCode(target);
     }
-
     @Override
     public final boolean equals(@Nullable Object obj) {
         if (obj instanceof Subscriber) {
@@ -145,8 +145,7 @@ class Subscriber {
     }
 
     /**
-     * Subscriber that synchronizes invocations of a method to ensure that only one thread may enter
-     * the method at a time.
+     * 同步方法调用以确保一次只能有一个线程进入该方法的订阅服务器。
      */
     @VisibleForTesting
     static final class SynchronizedSubscriber extends Subscriber {

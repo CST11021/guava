@@ -23,8 +23,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Handler for dispatching events to subscribers, providing different event ordering guarantees that
- * make sense for different situations.
+ * 用于将事件分发给订阅者的处理程序
  *
  * <p><b>Note:</b> The dispatcher is orthogonal to the subscriber's {@code Executor}. The dispatcher
  * controls the order in which events are dispatched, while the executor controls how (i.e. on which
@@ -35,36 +34,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 abstract class Dispatcher {
 
     /**
-     * Returns a dispatcher that queues events that are posted reentrantly on a thread that is already
-     * dispatching an event, guaranteeing that all events posted on a single thread are dispatched to
-     * all subscribers in the order they are posted.
-     *
-     * <p>When all subscribers are dispatched to using a <i>direct</i> executor (which dispatches on
-     * the same thread that posts the event), this yields a breadth-first dispatch order on each
-     * thread. That is, all subscribers to a single event A will be called before any subscribers to
-     * any events B and C that are posted to the event bus by the subscribers to A.
+     * 返回一个调度程序，该调度程序在发布订阅者后立即将事件分发给订阅者，而无需使用中间队列来更改分发顺序。
+     * 与使用队列时的广度优先相比，这实际上是深度优先的调度顺序。
+     */
+    static Dispatcher immediate() {
+        return ImmediateDispatcher.INSTANCE;
+    }
+
+    /**
+     * 返回一个分派器，该分派器将在已分派事件的线程上重新进入的事件排队，以确保在单个线程上分派的所有事件均按其发布顺序分派给所有订阅者，默认的EventBus实现
      */
     static Dispatcher perThreadDispatchQueue() {
         return new PerThreadQueuedDispatcher();
     }
 
     /**
-     * Returns a dispatcher that queues events that are posted in a single global queue. This behavior
-     * matches the original behavior of AsyncEventBus exactly, but is otherwise not especially useful.
-     * For async dispatch, an {@linkplain #immediate() immediate} dispatcher should generally be
-     * preferable.
+     * 返回一个调度程序：该调度程序将发布在单个全局队列中的事件排队，次实现配合AsyncEventBus一起使用，对于同步调度，通常最好使用{@linkplain #immediate()}立即调度程序
      */
     static Dispatcher legacyAsync() {
         return new LegacyAsyncDispatcher();
-    }
-
-    /**
-     * Returns a dispatcher that dispatches events to subscribers immediately as they're posted
-     * without using an intermediate queue to change the dispatch order. This is effectively a
-     * depth-first dispatch order, vs. breadth-first when using a queue.
-     */
-    static Dispatcher immediate() {
-        return ImmediateDispatcher.INSTANCE;
     }
 
     /**
@@ -72,42 +60,62 @@ abstract class Dispatcher {
      */
     abstract void dispatch(Object event, Iterator<Subscriber> subscribers);
 
+
     /**
-     * Implementation of a {@link #perThreadDispatchQueue()} dispatcher.
+     * 单线程立即同步执行的监听回调实现
      */
-    private static final class PerThreadQueuedDispatcher extends Dispatcher {
+    private static final class ImmediateDispatcher extends Dispatcher {
 
-        // This dispatcher matches the original dispatch behavior of EventBus.
-
-        /**
-         * Per-thread queue of events to dispatch.
-         */
-        private final ThreadLocal<Queue<Event>> queue =
-                new ThreadLocal<Queue<Event>>() {
-                    @Override
-                    protected Queue<Event> initialValue() {
-                        return Queues.newArrayDeque();
-                    }
-                };
-
-        /**
-         * Per-thread dispatch state, used to avoid reentrant event dispatching.
-         */
-        private final ThreadLocal<Boolean> dispatching =
-                new ThreadLocal<Boolean>() {
-                    @Override
-                    protected Boolean initialValue() {
-                        return false;
-                    }
-                };
+        private static final ImmediateDispatcher INSTANCE = new ImmediateDispatcher();
 
         @Override
         void dispatch(Object event, Iterator<Subscriber> subscribers) {
             checkNotNull(event);
+            while (subscribers.hasNext()) {
+                subscribers.next().dispatchEvent(event);
+            }
+        }
+    }
+
+    /**
+     * 每个线程都有对应的事件队列，事件发布时，依次从队列中获取时间，并执行事件回调程序，该实现是线程独立的，因此是线程安全的
+     */
+    private static final class PerThreadQueuedDispatcher extends Dispatcher {
+
+        // 该调度程序与EventBus的原始调度行为相匹配
+
+        /**
+         * 表示每个线程的事件队列，该队列是有序队列
+         */
+        private final ThreadLocal<Queue<Event>> queue = new ThreadLocal<Queue<Event>>() {
+            @Override
+            protected Queue<Event> initialValue() {
+                return Queues.newArrayDeque();
+            }
+        };
+
+        /**
+         * 标记当前线程是否在执行监听回调程序
+         */
+        private final ThreadLocal<Boolean> dispatching = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return false;
+            }
+        };
+
+        @Override
+        void dispatch(Object event, Iterator<Subscriber> subscribers) {
+            // event和subscribers都不允许为null
+            checkNotNull(event);
             checkNotNull(subscribers);
+
+            // 获取当前线程的事件队列
             Queue<Event> queueForThread = queue.get();
+            // 将事件添加到队列中
             queueForThread.offer(new Event(event, subscribers));
 
+            // 遍历事件队列，依次调用监听器回调
             if (!dispatching.get()) {
                 dispatching.set(true);
                 try {
@@ -124,6 +132,9 @@ abstract class Dispatcher {
             }
         }
 
+        /**
+         * 分支事件源和监听器
+         */
         private static final class Event {
             private final Object event;
             private final Iterator<Subscriber> subscribers;
@@ -136,7 +147,7 @@ abstract class Dispatcher {
     }
 
     /**
-     * Implementation of a {@link #legacyAsync()} dispatcher.
+     * 将事件放到全局的事件队列中，适合高并发的事件发布场景
      */
     private static final class LegacyAsyncDispatcher extends Dispatcher {
 
@@ -161,8 +172,7 @@ abstract class Dispatcher {
         /**
          * Global event queue.
          */
-        private final ConcurrentLinkedQueue<EventWithSubscriber> queue =
-                Queues.newConcurrentLinkedQueue();
+        private final ConcurrentLinkedQueue<EventWithSubscriber> queue = Queues.newConcurrentLinkedQueue();
 
         @Override
         void dispatch(Object event, Iterator<Subscriber> subscribers) {
@@ -188,18 +198,5 @@ abstract class Dispatcher {
         }
     }
 
-    /**
-     * Implementation of {@link #immediate()}.
-     */
-    private static final class ImmediateDispatcher extends Dispatcher {
-        private static final ImmediateDispatcher INSTANCE = new ImmediateDispatcher();
 
-        @Override
-        void dispatch(Object event, Iterator<Subscriber> subscribers) {
-            checkNotNull(event);
-            while (subscribers.hasNext()) {
-                subscribers.next().dispatchEvent(event);
-            }
-        }
-    }
 }

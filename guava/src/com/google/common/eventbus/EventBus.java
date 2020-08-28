@@ -102,7 +102,10 @@ public class EventBus {
     private final SubscriberExceptionHandler exceptionHandler;
 
     private final SubscriberRegistry subscribers = new SubscriberRegistry(this);
+    /** 事件分发器：用于将事件分发给每个订阅者并执行监听回调程序 */
     private final Dispatcher dispatcher;
+
+
 
     /**
      * Creates a new EventBus named "default".
@@ -145,38 +148,9 @@ public class EventBus {
         this.exceptionHandler = checkNotNull(exceptionHandler);
     }
 
-    /**
-     * Returns the identifier for this event bus.
-     *
-     * @since 19.0
-     */
-    public final String identifier() {
-        return identifier;
-    }
 
-    /**
-     * Returns the default executor this event bus uses for dispatching events to subscribers.
-     */
-    final Executor executor() {
-        return executor;
-    }
 
-    /**
-     * Handles the given exception thrown by a subscriber with the given context.
-     */
-    void handleSubscriberException(Throwable e, SubscriberExceptionContext context) {
-        checkNotNull(e);
-        checkNotNull(context);
-        try {
-            exceptionHandler.handleException(e, context);
-        } catch (Throwable e2) {
-            // if the handler threw an exception... well, just log it
-            logger.log(
-                    Level.SEVERE,
-                    String.format(Locale.ROOT, "Exception %s thrown while handling exception: %s", e2, e),
-                    e2);
-        }
-    }
+
 
     /**
      * 注册{@code object}上所有的监听方法，以接收事件
@@ -218,6 +192,32 @@ public class EventBus {
         }
     }
 
+    /**
+     * Handles the given exception thrown by a subscriber with the given context.
+     */
+    void handleSubscriberException(Throwable e, SubscriberExceptionContext context) {
+        checkNotNull(e);
+        checkNotNull(context);
+        try {
+            exceptionHandler.handleException(e, context);
+        } catch (Throwable e2) {
+            // if the handler threw an exception... well, just log it
+            logger.log(
+                    Level.SEVERE,
+                    String.format(Locale.ROOT, "Exception %s thrown while handling exception: %s", e2, e),
+                    e2);
+        }
+    }
+
+
+
+    // getter ...
+    public final String identifier() {
+        return identifier;
+    }
+    final Executor executor() {
+        return executor;
+    }
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this).addValue(identifier).toString();
