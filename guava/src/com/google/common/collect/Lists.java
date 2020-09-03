@@ -119,14 +119,6 @@ public final class Lists {
         return list;
     }
 
-    @VisibleForTesting
-    static int computeArrayListCapacity(int arraySize) {
-        checkNonnegative(arraySize, "arraySize");
-
-        // TODO(kevinb): Figure out the right behavior, and document it
-        return Ints.saturatedCast(5L + arraySize + (arraySize / 10));
-    }
-
     /**
      * Creates a <i>mutable</i> {@code ArrayList} instance containing the given
      * elements; a very thin shortcut for creating an empty list then calling
@@ -169,41 +161,23 @@ public final class Lists {
     }
 
     /**
-     * Creates an {@code ArrayList} instance backed by an array with the specified
-     * initial size; simply delegates to {@link ArrayList#ArrayList(int)}.
+     * 对应：new ArrayList<>(initialArraySize);
      *
-     * <p><b>Note for Java 7 and later:</b> this method is now unnecessary and
-     * should be treated as deprecated. Instead, use {@code new }{@link
-     * ArrayList#ArrayList(int) ArrayList}{@code <>(int)} directly, taking
-     * advantage of the new <a href="http://goo.gl/iz2Wi">"diamond" syntax</a>.
-     * (Unlike here, there is no risk of overload ambiguity, since the {@code
-     * ArrayList} constructors very wisely did not accept varargs.)
-     *
-     * @param initialArraySize the exact size of the initial backing array for
-     *                         the returned array list ({@code ArrayList} documentation calls this
-     *                         value the "capacity")
-     * @return a new, empty {@code ArrayList} which is guaranteed not to resize
-     * itself unless its size reaches {@code initialArraySize + 1}
-     * @throws IllegalArgumentException if {@code initialArraySize} is negative
+     * @param initialArraySize
+     * @param <E>
+     * @return
      */
     @GwtCompatible(serializable = true)
     public static <E> ArrayList<E> newArrayListWithCapacity(int initialArraySize) {
-        checkNonnegative(initialArraySize, "initialArraySize"); // for GWT.
+        // for GWT.
+        checkNonnegative(initialArraySize, "initialArraySize");
         return new ArrayList<>(initialArraySize);
     }
 
     /**
-     * Creates an {@code ArrayList} instance to hold {@code estimatedSize}
-     * elements, <i>plus</i> an unspecified amount of padding; you almost
-     * certainly mean to call {@link #newArrayListWithCapacity} (see that method
-     * for further advice on usage).
+     * 注意：此方法将很快被弃用。即使在极少数情况下您确实希望填充一些内容，最好还是明确选择所需的填充量，建议使用{@link #newArrayListWithCapacity(int)} 方法
      *
-     * <p><b>Note:</b> This method will soon be deprecated. Even in the rare case
-     * that you do want some amount of padding, it's best if you choose your
-     * desired amount explicitly.
-     *
-     * @param estimatedSize an estimate of the eventual {@link List#size()} of
-     *                      the new list
+     * @param estimatedSize an estimate of the eventual {@link List#size()} of the new list
      * @return a new, empty {@code ArrayList}, sized appropriately to hold the
      * estimated number of elements
      * @throws IllegalArgumentException if {@code estimatedSize} is negative
@@ -212,6 +186,17 @@ public final class Lists {
     public static <E> ArrayList<E> newArrayListWithExpectedSize(int estimatedSize) {
         return new ArrayList<>(computeArrayListCapacity(estimatedSize));
     }
+
+    @VisibleForTesting
+    static int computeArrayListCapacity(int arraySize) {
+        checkNonnegative(arraySize, "arraySize");
+
+        // TODO(kevinb): Figure out the right behavior, and document it
+        return Ints.saturatedCast(5L + arraySize + (arraySize / 10));
+    }
+
+
+
 
     // LinkedList
 
@@ -264,6 +249,9 @@ public final class Lists {
         return list;
     }
 
+
+    // CopyOnWriteArrayList
+
     /**
      * Creates an empty {@code CopyOnWriteArrayList} instance.
      *
@@ -273,7 +261,7 @@ public final class Lists {
      * @return a new, empty {@code CopyOnWriteArrayList}
      * @since 12.0
      */
-    @GwtIncompatible // CopyOnWriteArrayList
+    @GwtIncompatible
     public static <E> CopyOnWriteArrayList<E> newCopyOnWriteArrayList() {
         return new CopyOnWriteArrayList<>();
     }
@@ -285,15 +273,18 @@ public final class Lists {
      * @return a new {@code CopyOnWriteArrayList} containing those elements
      * @since 12.0
      */
-    @GwtIncompatible // CopyOnWriteArrayList
-    public static <E> CopyOnWriteArrayList<E> newCopyOnWriteArrayList(
-            Iterable<? extends E> elements) {
+    @GwtIncompatible
+    public static <E> CopyOnWriteArrayList<E> newCopyOnWriteArrayList(Iterable<? extends E> elements) {
         // We copy elements to an ArrayList first, rather than incurring the
         // quadratic cost of adding them to the COWAL directly.
         Collection<? extends E> elementsCollection =
                 (elements instanceof Collection) ? Collections2.cast(elements) : newArrayList(elements);
         return new CopyOnWriteArrayList<>(elementsCollection);
     }
+
+
+
+    // OnePlusArrayList：一个元素 + 数组
 
     /**
      * Returns an unmodifiable list containing the specified first element and
@@ -318,8 +309,10 @@ public final class Lists {
     /**
      * @see Lists#asList(Object, Object[])
      */
-    private static class OnePlusArrayList<E> extends AbstractList<E>
-            implements Serializable, RandomAccess {
+    private static class OnePlusArrayList<E> extends AbstractList<E> implements Serializable, RandomAccess {
+
+        private static final long serialVersionUID = 0;
+
         final E first;
         final E[] rest;
 
@@ -340,8 +333,11 @@ public final class Lists {
             return (index == 0) ? first : rest[index - 1];
         }
 
-        private static final long serialVersionUID = 0;
     }
+
+
+
+    // TwoPlusArrayList：两个元素 + 数组
 
     /**
      * Returns an unmodifiable list containing the specified first and second
@@ -367,8 +363,7 @@ public final class Lists {
     /**
      * @see Lists#asList(Object, Object, Object[])
      */
-    private static class TwoPlusArrayList<E> extends AbstractList<E>
-            implements Serializable, RandomAccess {
+    private static class TwoPlusArrayList<E> extends AbstractList<E> implements Serializable, RandomAccess {
         final E first;
         final E second;
         final E[] rest;
@@ -400,6 +395,9 @@ public final class Lists {
 
         private static final long serialVersionUID = 0;
     }
+
+
+
 
     /**
      * Returns every possible list that can be formed by choosing one element
@@ -561,8 +559,7 @@ public final class Lists {
      * by {@link java.util.stream.Stream#map}. This method is not being
      * deprecated, but we gently encourage you to migrate to streams.
      */
-    public static <F, T> List<T> transform(
-            List<F> fromList, Function<? super F, ? extends T> function) {
+    public static <F, T> List<T> transform(List<F> fromList, Function<? super F, ? extends T> function) {
         return (fromList instanceof RandomAccess)
                 ? new TransformingRandomAccessList<>(fromList, function)
                 : new TransformingSequentialList<>(fromList, function);
